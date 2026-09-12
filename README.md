@@ -110,7 +110,7 @@ population. Affordability is a design input, not an implementation detail.
 Python ≥ 3.11, three dependencies.
 
 ```bash
-git clone https://github.com/USER/tei-line-ends
+git clone https://github.com/d-c-h-r-i-s/tei-line-ends
 cd tei-line-ends
 uv sync                      # or: pip install lxml requests tqdm
 

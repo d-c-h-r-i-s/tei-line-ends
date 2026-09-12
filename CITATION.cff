@@ -5,7 +5,7 @@ type: software
 authors:
   - family-names: Lendl
     given-names: Christian
-repository-code: "https://github.com/USER/tei-line-ends"
+repository-code: "https://github.com/d-c-h-r-i-s/tei-line-ends"
 license: MIT
 version: 0.1.0
 date-released: 2026-09-12

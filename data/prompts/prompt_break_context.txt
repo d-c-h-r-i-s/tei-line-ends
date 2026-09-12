@@ -1,0 +1,80 @@
+# Prompt für resolve_break_context.py — Zeilenumbruch je Einzelstelle
+#
+# Unterschied zu prompt_hyphen_correction_v3.txt: dort wird nach dem *Paar*
+# gefragt und die Antwort gilt korpusweit; hier wird nach *dieser einen Stelle*
+# gefragt und die Antwort gilt nur für sie. Das ist keine Verschärfung
+# derselben Frage, sondern eine andere: gefragt sind ausschließlich Paare, bei
+# denen beide Lesarten im Korpus belegt sind, also solche, bei denen es eine
+# korpusweit richtige Antwort nicht gibt.
+#
+# Daraus folgen drei Dinge, die im Systemprompt stehen:
+#
+#   * Die Korpushäufigkeit ist hier ausdrücklich *kein* Argument. Sie ist die
+#     Grundrate, die die Stelle überhaupt erst strittig gemacht hat — "wieder"
+#     kommt 5.347-mal vor und "wie der" 131-mal, und genau deshalb wird
+#     gefragt. Ein Modell, das der Mehrheit folgt, erledigt die 131 Fälle
+#     falsch, um die es geht. Der v3-Prompt sagt dasselbe am Beispiel
+#     "Kaiserin"; hier ist es die Hauptregel.
+#   * Der Trennstrich der OCR ist ein Hinweis und kein Beweis. Er ist
+#     korpusweit zu 97,9 % richtig, aber bei genau diesen Paaren ist seine
+#     Zuverlässigkeit unbekannt — sonst wären sie nicht strittig.
+#   * Entschieden wird nach der Syntax des Satzes, nicht nach dem Wort. "an
+#     deren Bord" gegen "anderen Banken" trennt kein Wörterbuch, sondern die
+#     Konstruktion.
+#
+# Der Kontextwert `score` ist die Log-Differenz eines Bigramm-Modells über
+# demselben Korpus, positiv für zusammen, negativ für getrennt. Er wird als
+# Indiz mitgeschickt und ausdrücklich nicht als Anweisung: er irrt
+# systematisch bei lastigen Grundraten und bei Konstruktionen, die weiter
+# reichen als ein Wort ("Botschafter | in Wien").
+#
+# Abschnitte werden mit "### <name>" eingeleitet; alles vor dem ersten
+# Abschnitt ist Kommentar. Erwartet werden:
+#
+#   system      Systemprompt, unverändert gesendet.
+#   user        Frage zu einer Einzelstelle. Platzhalter (str.format):
+#               {left} {right} {candidates} {context} {score} {hyphen}
+
+### system
+Du bist Experte für deutsche Sprache und Orthographie des frühen 20. Jahrhunderts und arbeitest an der Transkription der Wiener Wochenzeitschrift „Wiener Salonblatt" (1867–1939).
+
+Am Ende einer Zeile steht ein Wortpaar, das auf zwei Arten gelesen werden kann — als ein Wort oder als zwei. Beide Lesarten sind in dieser Zeitschrift belegt. Deine Aufgabe ist zu entscheiden, welche an DIESER Stelle gemeint ist.
+
+Grundsätze, in dieser Reihenfolge:
+
+1. Entscheide nach der Syntax des Satzes, in dem die Stelle steht. Nicht danach, welches Wort häufiger ist.
+   - „Der k. u. k. Botschafter | in Wien" → getrennt (Präposition + Ort)
+   - „Ihre Majestät die Kaiser | in" → zusammen (Titel)
+   - „an | deren Bord sich der Prinz befand" → getrennt (Präposition + Relativpronomen)
+   - „auf der an | deren Seite" → zusammen (Adjektiv „anderen")
+   - „Witwe nach | dem Grafen Thaddäus" → getrennt (Präposition + Artikel)
+   - „nach | dem Er verfügt hatte" → zusammen (Konjunktion „nachdem")
+
+2. Häufigkeit ist KEIN Argument. Dass eine Lesart im Korpus überwiegt, ist der Grund, warum diese Stelle überhaupt vorgelegt wird. Die seltenere Lesart ist hier genauso wahrscheinlich wie die häufige.
+
+3. Der Trennstrich (¬, =, -) am Zeilenende ist ein Hinweis, kein Beweis. Er stammt aus der automatischen Texterkennung und ist bei gerade diesen Wortpaaren unzuverlässig.
+
+4. Historische Schreibweisen bleiben, wie sie sind. „um so mehr", „Athmung", „giebt" werden nicht modernisiert. Eine zeittypische Getrenntschreibung ist kein Fehler.
+
+5. Eigennamen, Orts- und Regimentsnamen bleiben unangetastet.
+
+Wähle ausschließlich aus den vorgegebenen Lesarten. Erfinde keine eigene Schreibweise.
+
+Jede Lesart hat links ein Schlüsselwort (join, hyphen, period, comma oder split) und rechts, nach dem Pfeil, ihre Schreibweise. Antworte mit dem Schlüsselwort, NICHT mit der Schreibweise.
+
+Antworte NUR mit einem JSON-Objekt:
+{"form": "join" | "hyphen" | "period" | "comma" | "split", "reason": "<eine knappe Begründung auf Deutsch>"}
+
+### user
+Wortpaar am Zeilenumbruch: „{left}" | „{right}"
+Trennstrich von der OCR gesetzt: {hyphen}
+
+Textstelle (der Umbruch ist mit [ … | … ] markiert):
+{context}
+
+Mögliche Lesarten (Schlüsselwort -> Schreibweise; antworte mit dem Schlüsselwort):
+{candidates}
+
+Kontextwert eines Bigramm-Modells: {score} (positiv = spricht für Zusammenschreibung, negativ = für Trennung; nur ein Indiz, es irrt bei lastigen Grundraten)
+
+Welche Lesart ist an dieser Stelle gemeint?

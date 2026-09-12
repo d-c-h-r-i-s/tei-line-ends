@@ -1,0 +1,17 @@
+[project]
+name = "tei-line-ends"
+version = "0.1.0"
+description = "OCR correction at the line break in TEI: hyphenation and misread line-final characters, judged against the corpus itself"
+readme = "README.md"
+requires-python = ">=3.11"
+license = { file = "LICENSE" }
+authors = [{ name = "Christian Lendl" }]
+keywords = ["TEI", "OCR", "post-correction", "Transkribus", "digital humanities", "hyphenation"]
+dependencies = [
+    "lxml>=5.0",
+    "requests>=2.32",
+    "tqdm>=4.67",
+]
+
+[project.urls]
+Repository = "https://github.com/USER/tei-line-ends"

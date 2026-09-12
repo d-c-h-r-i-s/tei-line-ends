@@ -1,0 +1,60 @@
+# Tunable settings. Paths are not here — they are derived from where config.py
+# sits, so a fresh clone runs with no configuration at all.
+
+# ============================================================================
+# The corpus
+# ============================================================================
+
+[corpus]
+# Namespace for this project's own attributes (the word-break marker and its
+# certainty). Everything TEI covers is written in plain TEI. Change it to a
+# domain you control; nothing fetches the URL.
+project_namespace = "https://example.org/ns/1.0"
+
+# Prefix of the `<application ident='...'>` markers written into
+# <encodingDesc> to record that a step has run over a file.
+marker_prefix = "lineends"
+
+# ============================================================================
+# Local models
+# ============================================================================
+#
+# One section per script, so a model can be changed for one task without
+# touching the others. A missing section falls back to
+# lineends/llm_backend.FALLBACK_MODELS.
+
+[llm]
+# 0.0 throughout. These are classification questions with a fixed answer set,
+# not generation, and a run has to be reproducible.
+temperature = 0.0
+
+[llm.hyphen_resolver]
+ollama = "gemma4:31b"
+lmstudio = "google/gemma-4-31b"
+
+[llm.break_context]
+ollama = "gemma4:31b"
+lmstudio = "google/gemma-4-31b"
+
+[llm.line_end_resolver]
+ollama = "gemma4:31b"
+lmstudio = "google/gemma-4-31b"
+
+[llm.ocr_extractor]
+ollama = "gemma4:31b"
+lmstudio = "google/gemma-4-31b"
+
+# ============================================================================
+# Transkribus deep links  (optional)
+# ============================================================================
+#
+# Every validator writes a link per row so a finding can be opened on the scan.
+# The collection id belongs in `.secret.env` if your collection is private;
+# see docs/transkribus-links.md.
+
+[transkribus]
+collection_id = ""
+base_url = "https://beta.transkribus.org/collection"
+# One capture group: the issue date, in the form the first column of
+# data/csv/transkribus_filenames.csv uses.
+filename_pattern = '(\d{8})'

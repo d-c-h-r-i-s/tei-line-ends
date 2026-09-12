@@ -1,0 +1,24 @@
+cff-version: 1.2.0
+title: "tei-line-ends: OCR correction at the line break in TEI"
+message: "If you use these tools, please cite them."
+type: software
+authors:
+  - family-names: Lendl
+    given-names: Christian
+repository-code: "https://github.com/USER/tei-line-ends"
+license: MIT
+version: 0.1.0
+date-released: 2026-09-12
+keywords:
+  - TEI
+  - OCR post-correction
+  - Transkribus
+  - digital humanities
+abstract: >-
+  Two chains of tools that correct OCR errors at the line break in TEI
+  transcriptions: line-break hyphenation (is a break a real hyphen, or an
+  artefact of the line?) and misread line-final characters (Wien transcribed
+  as Wier). Both build their reference lexicon from the corpus itself, from
+  line-interior tokens that a line break cannot have damaged, and both keep
+  every machine proposal in a ranked CSV decision store that a human outranks,
+  so no detector ever writes to the transcription.

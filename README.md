@@ -143,6 +143,12 @@ Everything corpus-specific is in `config.toml`:
 | `[llm.*]` | your local model per task |
 | `[transkribus]` | your collection — see [docs/transkribus-links.md](docs/transkribus-links.md) |
 
+The decision stores in `data/csv/` ship as two-row examples so the format is
+visible and a fresh clone runs; they are not the Salonblatt project's own
+decisions, which are about one specific corpus. See
+[data/csv/README.md](data/csv/README.md) for what each store holds and how the
+`manual > llm > rule` ranking works.
+
 Two things are genuinely German and are worth knowing before you start: the
 alphabet `validate_line_end_chars.py` substitutes over includes `äöüß`, and the
 prompts in `data/prompts/` are written in German about German orthography. The

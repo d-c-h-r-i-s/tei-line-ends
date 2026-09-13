@@ -124,6 +124,68 @@ Measured on the corpus (880,806 judged line ends):
     MISREAD    2,350   0.27%   (1,371 distinct tokens)
     REVIEW       869   0.10%   (  318 distinct tokens)
 
+### Where each line end goes, and what decides it
+
+One number governs the whole chain: **how often the transcribed spelling occurs
+inside a line**, where no break can have damaged it. Two gates come first,
+though, because most line ends present nothing to decide at all.
+
+```
+            +- is there anything to decide at all? --------------------------------+
+            |                                                                      |
+            |  token shorter than 4 chars            --min-length   4    OK        |
+            |  no 1-char variant is a word here      --min-count   20    OK        |
+            |                                                                      |
+            |  >>> nobody acts. 99.63% of all line ends leave here.                |
+            +----------------------------------------------------------------------+
+                                         |  a variant IS attested
+                                         v
+      interior frequency of the                gate            verdict    who acts
+      observed spelling                        (default)
+      --------------------------------------------------------------------------------
+ >=20 the spelling is itself a word        AMBIGUOUS_AT  20     OK *      resolve_line_end_context.py
+      (der / den / dem)                                                   per OCCURRENCE
+      --------------------------------------------------------------------------------
+ 2-19 attested, but barely                 --max-observed 1     REVIEW    resolve_line_end_llm.py
+                                                                          per TOKEN -> wildcard row
+      --------------------------------------------------------------------------------
+ 0-1  essentially absent, and one          --ratio       50     MISREAD   wildcard row written directly
+      candidate dominates 50:1                                            (LLM confirms or overturns)
+      --------------------------------------------------------------------------------
+
+ * OK by default. `--ambiguous` turns this band into REVIEW instead - 594 review
+   items become 82,836, which is why it is off.
+```
+
+**The `>=20` band is hidden inside that 99.63%.** By default the validator marks
+the ambiguous class `OK` with the reason `observed-is-a-word`, so in its own
+summary those line ends are indistinguishable from the ones that are genuinely
+fine. That is exactly why `resolve_line_end_context.py` re-derives its
+population from the corpus rather than reading this script's output: the class
+it exists for was never broken out. See §6.
+
+### The reason strings
+
+The `reason` column of `output/<date>_line_end_chars.csv`, in the order
+`judge()` tests them:
+
+| # | reason | verdict | what it means |
+|---|---|---|---|
+| 0 | `too-short` | OK | under `--min-length` |
+| 1 | `no-attested-variant` | OK | no one-character variant reaches `--min-count` |
+| 2 | `observed-is-a-word` | OK | >= `AMBIGUOUS_AT` - the context stage's territory |
+| 3 | `observed-attested` | OK | attested enough relative to the candidate (`--ratio`) |
+| 4 | `competing-variants` | REVIEW | two candidates both explain it - `Wien` and `Wiem` for `Wier` |
+| 5 | `r->n?  observed 4x inside a line` | REVIEW | a candidate dominates, but the observed form is used |
+| 6 | `r->n` | MISREAD | a candidate dominates and the observed form is absent |
+
+Two of these sit off the frequency axis, and knowing which keeps the chart from
+being over-claimed: **3** can return OK even at frequency 1, when the candidate
+is not 50x more common; and **4** is a REVIEW caused by two candidates tying
+rather than by the observed count. Both land where the 2-19 band lands - the
+LLM, one answer per token - so the chart holds for *who acts*, which is what it
+is for.
+
 **Why a confident MISREAD is still not applied.** Two failure modes, neither
 fixable by moving a threshold:
 
@@ -288,6 +350,36 @@ The obvious reading is "the window is too narrow". Right diagnosis, wrong fix:
 every term beyond the adjacent token cancels out of the margin. Re-scoring all
 264 checked rows at windows of 2, 3 and 5 changes **0 margins and 0 proposals**.
 More context means a higher-order model or the LLM — never a window parameter.
+
+### Why the two stages never collide
+
+The populations are **disjoint by construction**, and the shared constant is
+what keeps them that way. `ambiguous()` drops any line end whose observed
+spelling occurs fewer than `AMBIGUOUS_AT` times inside a line; stage A's MISREAD
+requires `observed_count <= --max-observed`, default 1. No token can satisfy
+both, so **the context stage never sees a token that already has a wildcard
+row**, and the two can never propose competing corrections for the same word.
+
+`AMBIGUOUS_AT = 20` is declared in both files with a comment in each pointing at
+the other, precisely so the boundary cannot drift.
+
+The natural follow-up question — could a per-occurrence verdict overturn a
+wildcard rule on one line? — is *architecturally* yes and *currently* no. The
+phase-4 design has an occurrence row overruling a wildcard row for its own line,
+exactly as `hyphen_occurrences.csv` overrules the pair plan. What is missing is
+a source of occurrence rows for those tokens, which would mean widening the
+context stage below `AMBIGUOUS_AT`. That is "Problem A" in
+[line-end-context-correction.md](line-end-context-correction.md),
+sized at **1,050 tokens / 1,647 occurrences** and parked on purpose:
+
+> *"Small, and the existing `rule` -> `llm` -> `manual` ranking plus
+> `approved=no` already gives a human a way out. Worth an occurrence store, but
+> it is not where the value is."*
+
+The concrete harm it would fix is the `dorf -> dort` class: a wildcard row fires
+on every line-final `dorf`, the place names included, and the only remedy today
+is retiring the whole row with `approved=no` — all or nothing, where an
+occurrence store would keep the fix for the real misreadings.
 
 ### Status: honest version
 

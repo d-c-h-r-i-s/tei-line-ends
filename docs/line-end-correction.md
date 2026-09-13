@@ -271,6 +271,26 @@ free.**
 
 This is the part that does not look like the rest, and here is why.
 
+### The unit of decision
+
+The distinction that causes every misreading of this chain. Stage C does not
+group occurrences of a word and judge them together — it judges **each
+occurrence on its own**, keyed by `(file, line_facs)`, with its own left and
+right neighbour and its own score. Two occurrences of `der` on different pages
+can come back with opposite verdicts.
+
+| stage | unit of decision | what one verdict claims |
+|---|---|---|
+| `validate_line_end_chars.py` | token | "`Wier` is wrong at any line end" |
+| `resolve_line_end_llm.py` | token | the same claim, confirmed or overturned by reading sentences |
+| `resolve_line_end_context.py` | **one line end** | "*this* `der`, on this line, should be `dem`" |
+
+That is the whole reason the stage exists. A per-token answer is what stage A
+already produces; per-occurrence judgment only earns its cost where the right
+answer changes between occurrences — the same argument `resolve_break_context.py`
+makes with `kaiser|in`, "Kaiserin Zita" in one column and "der Kaiser in Wien"
+in the next.
+
 ### What it is for
 
 `validate_line_end_chars.py` names its own blind spot in its docstring:

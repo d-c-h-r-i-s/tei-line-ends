@@ -236,6 +236,5 @@ read. Each one says what it refuses to do and why.
 ## Licence and citation
 
 Code is **MIT**. The data in [examples/](examples/) — transcriptions, decision
-stores and hand-labelled samples — is **CC BY 4.0**; the Transkribus output is
-the author's own under contract with the Österreichische Nationalbibliothek.
-See [CITATION.cff](CITATION.cff).
+stores and hand-labelled samples — is **CC BY 4.0**. See
+[CITATION.cff](CITATION.cff).

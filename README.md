@@ -183,6 +183,7 @@ be named differently.
 | line-final characters, rule + LLM | complete, run over 787 issues |
 | `validate_line_end_truncations.py` | detector only, no resolver. Hand-checked at **38%**, against the 80% bar its plan set |
 | `resolve_line_end_context.py` | phases 1–3 done; **scores and measures, does not correct** |
+| evaluation and statistics | **to follow** — see below |
 
 The per-occurrence line-end stage is deliberately unfinished. Its five gates and
 its noisy-channel term are built and measured — the channel lifted ranking from
@@ -193,6 +194,25 @@ errors already fixed by hand. What it measured so far, including the three
 failure populations no margin can separate and a window-size experiment that
 changed **0 margins and 0 proposals**, is in
 [docs/line-end-context-correction.md](docs/line-end-context-correction.md).
+
+### Evaluation and statistics — coming
+
+What is not here yet is the layer that scores the corrections themselves: how
+many were made, of what kind, and how right they turned out to be, measured over
+a corpus rather than over a hand-checked sample of a few hundred rows.
+
+It is not vapourware. The same correction method has already been run and
+evaluated on another corpus, and that evaluation code exists; porting it here is
+a matter of days rather than a research question. It will land in this
+repository when it does.
+
+Until then, the quantitative claims in this README and in [docs/](docs/) rest on
+the two hand-labelled samples in
+[examples/ground-truth/](examples/ground-truth/) — 571 rows, every verdict
+filled — which is why they ship: the numbers can be checked, and re-measured,
+without waiting for the evaluation layer.
+
+---
 
 Five issues ship in [examples/xml/](examples/xml/), **raw from Transkribus** —
 no correction of any kind applied — so the whole chain can be run and watched

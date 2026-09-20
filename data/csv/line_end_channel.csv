@@ -1,0 +1,318 @@
+kind,observed,intended,count,source,fitted_on
+substitution,a,d,5,output/20260830_line_end_chars.csv,2026-09-18
+substitution,a,e,15,output/20260830_line_end_chars.csv,2026-09-18
+substitution,a,f,2,output/20260830_line_end_chars.csv,2026-09-18
+substitution,a,g,2,output/20260830_line_end_chars.csv,2026-09-18
+substitution,a,h,3,output/20260830_line_end_chars.csv,2026-09-18
+substitution,a,i,1,output/20260830_line_end_chars.csv,2026-09-18
+substitution,a,o,2,output/20260830_line_end_chars.csv,2026-09-18
+substitution,a,s,2,output/20260830_line_end_chars.csv,2026-09-18
+substitution,a,y,2,output/20260830_line_end_chars.csv,2026-09-18
+substitution,a,z,1,output/20260830_line_end_chars.csv,2026-09-18
+substitution,b,a,1,output/20260830_line_end_chars.csv,2026-09-18
+substitution,b,f,1,output/20260830_line_end_chars.csv,2026-09-18
+substitution,b,l,1,output/20260830_line_end_chars.csv,2026-09-18
+substitution,b,n,2,output/20260830_line_end_chars.csv,2026-09-18
+substitution,b,r,1,output/20260830_line_end_chars.csv,2026-09-18
+substitution,b,s,1,output/20260830_line_end_chars.csv,2026-09-18
+substitution,b,t,1,output/20260830_line_end_chars.csv,2026-09-18
+substitution,c,d,6,output/20260830_line_end_chars.csv,2026-09-18
+substitution,c,e,3,output/20260830_line_end_chars.csv,2026-09-18
+substitution,c,o,3,output/20260830_line_end_chars.csv,2026-09-18
+substitution,c,p,1,output/20260830_line_end_chars.csv,2026-09-18
+substitution,c,r,1,output/20260830_line_end_chars.csv,2026-09-18
+substitution,c,v,1,output/20260830_line_end_chars.csv,2026-09-18
+substitution,c,z,2,output/20260830_line_end_chars.csv,2026-09-18
+substitution,c,ß,2,output/20260830_line_end_chars.csv,2026-09-18
+substitution,d,a,2,output/20260830_line_end_chars.csv,2026-09-18
+substitution,d,b,2,output/20260830_line_end_chars.csv,2026-09-18
+substitution,d,e,3,output/20260830_line_end_chars.csv,2026-09-18
+substitution,d,g,27,output/20260830_line_end_chars.csv,2026-09-18
+substitution,d,i,1,output/20260830_line_end_chars.csv,2026-09-18
+substitution,d,k,2,output/20260830_line_end_chars.csv,2026-09-18
+substitution,d,l,2,output/20260830_line_end_chars.csv,2026-09-18
+substitution,d,n,1,output/20260830_line_end_chars.csv,2026-09-18
+substitution,d,o,10,output/20260830_line_end_chars.csv,2026-09-18
+substitution,d,s,2,output/20260830_line_end_chars.csv,2026-09-18
+substitution,d,t,5,output/20260830_line_end_chars.csv,2026-09-18
+substitution,d,z,1,output/20260830_line_end_chars.csv,2026-09-18
+substitution,e,a,39,output/20260830_line_end_chars.csv,2026-09-18
+substitution,e,d,16,output/20260830_line_end_chars.csv,2026-09-18
+substitution,e,f,1,output/20260830_line_end_chars.csv,2026-09-18
+substitution,e,g,2,output/20260830_line_end_chars.csv,2026-09-18
+substitution,e,h,1,output/20260830_line_end_chars.csv,2026-09-18
+substitution,e,i,3,output/20260830_line_end_chars.csv,2026-09-18
+substitution,e,l,1,output/20260830_line_end_chars.csv,2026-09-18
+substitution,e,m,1,output/20260830_line_end_chars.csv,2026-09-18
+substitution,e,n,6,output/20260830_line_end_chars.csv,2026-09-18
+substitution,e,o,30,output/20260830_line_end_chars.csv,2026-09-18
+substitution,e,r,1,output/20260830_line_end_chars.csv,2026-09-18
+substitution,e,s,13,output/20260830_line_end_chars.csv,2026-09-18
+substitution,e,t,35,output/20260830_line_end_chars.csv,2026-09-18
+substitution,e,w,1,output/20260830_line_end_chars.csv,2026-09-18
+substitution,e,y,9,output/20260830_line_end_chars.csv,2026-09-18
+substitution,e,z,1,output/20260830_line_end_chars.csv,2026-09-18
+substitution,f,b,1,output/20260830_line_end_chars.csv,2026-09-18
+substitution,f,e,1,output/20260830_line_end_chars.csv,2026-09-18
+substitution,f,g,1,output/20260830_line_end_chars.csv,2026-09-18
+substitution,f,l,1,output/20260830_line_end_chars.csv,2026-09-18
+substitution,f,n,2,output/20260830_line_end_chars.csv,2026-09-18
+substitution,f,r,1,output/20260830_line_end_chars.csv,2026-09-18
+substitution,f,t,13,output/20260830_line_end_chars.csv,2026-09-18
+substitution,f,ß,12,output/20260830_line_end_chars.csv,2026-09-18
+substitution,g,b,1,output/20260830_line_end_chars.csv,2026-09-18
+substitution,g,d,9,output/20260830_line_end_chars.csv,2026-09-18
+substitution,g,e,2,output/20260830_line_end_chars.csv,2026-09-18
+substitution,g,f,1,output/20260830_line_end_chars.csv,2026-09-18
+substitution,g,i,1,output/20260830_line_end_chars.csv,2026-09-18
+substitution,g,k,1,output/20260830_line_end_chars.csv,2026-09-18
+substitution,g,l,1,output/20260830_line_end_chars.csv,2026-09-18
+substitution,g,m,1,output/20260830_line_end_chars.csv,2026-09-18
+substitution,g,n,9,output/20260830_line_end_chars.csv,2026-09-18
+substitution,g,s,17,output/20260830_line_end_chars.csv,2026-09-18
+substitution,g,t,3,output/20260830_line_end_chars.csv,2026-09-18
+substitution,g,z,2,output/20260830_line_end_chars.csv,2026-09-18
+substitution,g,ß,2,output/20260830_line_end_chars.csv,2026-09-18
+substitution,h,a,1,output/20260830_line_end_chars.csv,2026-09-18
+substitution,h,e,4,output/20260830_line_end_chars.csv,2026-09-18
+substitution,h,f,1,output/20260830_line_end_chars.csv,2026-09-18
+substitution,h,k,4,output/20260830_line_end_chars.csv,2026-09-18
+substitution,h,n,2,output/20260830_line_end_chars.csv,2026-09-18
+substitution,h,s,4,output/20260830_line_end_chars.csv,2026-09-18
+substitution,h,z,3,output/20260830_line_end_chars.csv,2026-09-18
+substitution,h,ß,2,output/20260830_line_end_chars.csv,2026-09-18
+substitution,i,a,3,output/20260830_line_end_chars.csv,2026-09-18
+substitution,i,b,1,output/20260830_line_end_chars.csv,2026-09-18
+substitution,i,d,1,output/20260830_line_end_chars.csv,2026-09-18
+substitution,i,e,3,output/20260830_line_end_chars.csv,2026-09-18
+substitution,i,f,1,output/20260830_line_end_chars.csv,2026-09-18
+substitution,i,k,1,output/20260830_line_end_chars.csv,2026-09-18
+substitution,i,l,3,output/20260830_line_end_chars.csv,2026-09-18
+substitution,i,n,8,output/20260830_line_end_chars.csv,2026-09-18
+substitution,i,r,8,output/20260830_line_end_chars.csv,2026-09-18
+substitution,i,t,1,output/20260830_line_end_chars.csv,2026-09-18
+substitution,i,u,1,output/20260830_line_end_chars.csv,2026-09-18
+substitution,i,y,2,output/20260830_line_end_chars.csv,2026-09-18
+substitution,j,e,1,output/20260830_line_end_chars.csv,2026-09-18
+substitution,j,i,1,output/20260830_line_end_chars.csv,2026-09-18
+substitution,k,d,2,output/20260830_line_end_chars.csv,2026-09-18
+substitution,k,e,1,output/20260830_line_end_chars.csv,2026-09-18
+substitution,k,h,2,output/20260830_line_end_chars.csv,2026-09-18
+substitution,k,i,1,output/20260830_line_end_chars.csv,2026-09-18
+substitution,k,l,1,output/20260830_line_end_chars.csv,2026-09-18
+substitution,k,m,1,output/20260830_line_end_chars.csv,2026-09-18
+substitution,k,n,2,output/20260830_line_end_chars.csv,2026-09-18
+substitution,k,r,4,output/20260830_line_end_chars.csv,2026-09-18
+substitution,k,z,1,output/20260830_line_end_chars.csv,2026-09-18
+substitution,l,b,3,output/20260830_line_end_chars.csv,2026-09-18
+substitution,l,d,3,output/20260830_line_end_chars.csv,2026-09-18
+substitution,l,e,10,output/20260830_line_end_chars.csv,2026-09-18
+substitution,l,f,4,output/20260830_line_end_chars.csv,2026-09-18
+substitution,l,g,3,output/20260830_line_end_chars.csv,2026-09-18
+substitution,l,h,3,output/20260830_line_end_chars.csv,2026-09-18
+substitution,l,i,1,output/20260830_line_end_chars.csv,2026-09-18
+substitution,l,k,1,output/20260830_line_end_chars.csv,2026-09-18
+substitution,l,m,3,output/20260830_line_end_chars.csv,2026-09-18
+substitution,l,n,12,output/20260830_line_end_chars.csv,2026-09-18
+substitution,l,p,1,output/20260830_line_end_chars.csv,2026-09-18
+substitution,l,r,7,output/20260830_line_end_chars.csv,2026-09-18
+substitution,l,s,4,output/20260830_line_end_chars.csv,2026-09-18
+substitution,l,t,2,output/20260830_line_end_chars.csv,2026-09-18
+substitution,l,y,1,output/20260830_line_end_chars.csv,2026-09-18
+substitution,l,z,3,output/20260830_line_end_chars.csv,2026-09-18
+substitution,l,ß,1,output/20260830_line_end_chars.csv,2026-09-18
+substitution,m,d,1,output/20260830_line_end_chars.csv,2026-09-18
+substitution,m,e,1,output/20260830_line_end_chars.csv,2026-09-18
+substitution,m,g,1,output/20260830_line_end_chars.csv,2026-09-18
+substitution,m,i,1,output/20260830_line_end_chars.csv,2026-09-18
+substitution,m,l,5,output/20260830_line_end_chars.csv,2026-09-18
+substitution,m,n,39,output/20260830_line_end_chars.csv,2026-09-18
+substitution,m,r,4,output/20260830_line_end_chars.csv,2026-09-18
+substitution,m,s,1,output/20260830_line_end_chars.csv,2026-09-18
+substitution,m,t,2,output/20260830_line_end_chars.csv,2026-09-18
+substitution,m,z,2,output/20260830_line_end_chars.csv,2026-09-18
+substitution,m,ß,2,output/20260830_line_end_chars.csv,2026-09-18
+substitution,n,b,1,output/20260830_line_end_chars.csv,2026-09-18
+substitution,n,e,4,output/20260830_line_end_chars.csv,2026-09-18
+substitution,n,i,1,output/20260830_line_end_chars.csv,2026-09-18
+substitution,n,k,1,output/20260830_line_end_chars.csv,2026-09-18
+substitution,n,l,6,output/20260830_line_end_chars.csv,2026-09-18
+substitution,n,m,21,output/20260830_line_end_chars.csv,2026-09-18
+substitution,n,r,36,output/20260830_line_end_chars.csv,2026-09-18
+substitution,n,s,12,output/20260830_line_end_chars.csv,2026-09-18
+substitution,n,t,7,output/20260830_line_end_chars.csv,2026-09-18
+substitution,n,u,2,output/20260830_line_end_chars.csv,2026-09-18
+substitution,n,w,4,output/20260830_line_end_chars.csv,2026-09-18
+substitution,n,y,1,output/20260830_line_end_chars.csv,2026-09-18
+substitution,n,z,1,output/20260830_line_end_chars.csv,2026-09-18
+substitution,n,ß,2,output/20260830_line_end_chars.csv,2026-09-18
+substitution,o,a,7,output/20260830_line_end_chars.csv,2026-09-18
+substitution,o,d,9,output/20260830_line_end_chars.csv,2026-09-18
+substitution,o,e,15,output/20260830_line_end_chars.csv,2026-09-18
+substitution,o,f,3,output/20260830_line_end_chars.csv,2026-09-18
+substitution,o,i,3,output/20260830_line_end_chars.csv,2026-09-18
+substitution,o,k,3,output/20260830_line_end_chars.csv,2026-09-18
+substitution,o,l,2,output/20260830_line_end_chars.csv,2026-09-18
+substitution,o,s,4,output/20260830_line_end_chars.csv,2026-09-18
+substitution,o,u,2,output/20260830_line_end_chars.csv,2026-09-18
+substitution,o,w,1,output/20260830_line_end_chars.csv,2026-09-18
+substitution,o,z,1,output/20260830_line_end_chars.csv,2026-09-18
+substitution,o,ö,2,output/20260830_line_end_chars.csv,2026-09-18
+substitution,p,f,1,output/20260830_line_end_chars.csv,2026-09-18
+substitution,p,l,1,output/20260830_line_end_chars.csv,2026-09-18
+substitution,p,s,1,output/20260830_line_end_chars.csv,2026-09-18
+substitution,p,ß,1,output/20260830_line_end_chars.csv,2026-09-18
+substitution,r,e,4,output/20260830_line_end_chars.csv,2026-09-18
+substitution,r,g,2,output/20260830_line_end_chars.csv,2026-09-18
+substitution,r,i,10,output/20260830_line_end_chars.csv,2026-09-18
+substitution,r,k,2,output/20260830_line_end_chars.csv,2026-09-18
+substitution,r,l,11,output/20260830_line_end_chars.csv,2026-09-18
+substitution,r,m,2,output/20260830_line_end_chars.csv,2026-09-18
+substitution,r,n,508,output/20260830_line_end_chars.csv,2026-09-18
+substitution,r,p,4,output/20260830_line_end_chars.csv,2026-09-18
+substitution,r,s,9,output/20260830_line_end_chars.csv,2026-09-18
+substitution,r,t,13,output/20260830_line_end_chars.csv,2026-09-18
+substitution,r,v,2,output/20260830_line_end_chars.csv,2026-09-18
+substitution,r,y,3,output/20260830_line_end_chars.csv,2026-09-18
+substitution,r,z,1,output/20260830_line_end_chars.csv,2026-09-18
+substitution,r,ß,1,output/20260830_line_end_chars.csv,2026-09-18
+substitution,s,a,6,output/20260830_line_end_chars.csv,2026-09-18
+substitution,s,d,2,output/20260830_line_end_chars.csv,2026-09-18
+substitution,s,e,100,output/20260830_line_end_chars.csv,2026-09-18
+substitution,s,f,1,output/20260830_line_end_chars.csv,2026-09-18
+substitution,s,g,1,output/20260830_line_end_chars.csv,2026-09-18
+substitution,s,h,1,output/20260830_line_end_chars.csv,2026-09-18
+substitution,s,i,1,output/20260830_line_end_chars.csv,2026-09-18
+substitution,s,k,1,output/20260830_line_end_chars.csv,2026-09-18
+substitution,s,l,1,output/20260830_line_end_chars.csv,2026-09-18
+substitution,s,m,2,output/20260830_line_end_chars.csv,2026-09-18
+substitution,s,n,57,output/20260830_line_end_chars.csv,2026-09-18
+substitution,s,o,1,output/20260830_line_end_chars.csv,2026-09-18
+substitution,s,r,8,output/20260830_line_end_chars.csv,2026-09-18
+substitution,s,t,6,output/20260830_line_end_chars.csv,2026-09-18
+substitution,s,v,1,output/20260830_line_end_chars.csv,2026-09-18
+substitution,s,y,1,output/20260830_line_end_chars.csv,2026-09-18
+substitution,s,z,1,output/20260830_line_end_chars.csv,2026-09-18
+substitution,s,ß,2,output/20260830_line_end_chars.csv,2026-09-18
+substitution,t,b,4,output/20260830_line_end_chars.csv,2026-09-18
+substitution,t,d,13,output/20260830_line_end_chars.csv,2026-09-18
+substitution,t,e,26,output/20260830_line_end_chars.csv,2026-09-18
+substitution,t,f,5,output/20260830_line_end_chars.csv,2026-09-18
+substitution,t,g,2,output/20260830_line_end_chars.csv,2026-09-18
+substitution,t,h,2,output/20260830_line_end_chars.csv,2026-09-18
+substitution,t,l,2,output/20260830_line_end_chars.csv,2026-09-18
+substitution,t,m,2,output/20260830_line_end_chars.csv,2026-09-18
+substitution,t,n,8,output/20260830_line_end_chars.csv,2026-09-18
+substitution,t,p,1,output/20260830_line_end_chars.csv,2026-09-18
+substitution,t,r,6,output/20260830_line_end_chars.csv,2026-09-18
+substitution,t,s,5,output/20260830_line_end_chars.csv,2026-09-18
+substitution,t,u,2,output/20260830_line_end_chars.csv,2026-09-18
+substitution,t,w,1,output/20260830_line_end_chars.csv,2026-09-18
+substitution,t,y,3,output/20260830_line_end_chars.csv,2026-09-18
+substitution,t,z,1,output/20260830_line_end_chars.csv,2026-09-18
+substitution,u,a,2,output/20260830_line_end_chars.csv,2026-09-18
+substitution,u,i,1,output/20260830_line_end_chars.csv,2026-09-18
+substitution,u,m,4,output/20260830_line_end_chars.csv,2026-09-18
+substitution,u,n,3,output/20260830_line_end_chars.csv,2026-09-18
+substitution,u,s,1,output/20260830_line_end_chars.csv,2026-09-18
+substitution,u,y,1,output/20260830_line_end_chars.csv,2026-09-18
+substitution,u,z,2,output/20260830_line_end_chars.csv,2026-09-18
+substitution,u,ß,1,output/20260830_line_end_chars.csv,2026-09-18
+substitution,v,a,3,output/20260830_line_end_chars.csv,2026-09-18
+substitution,v,b,5,output/20260830_line_end_chars.csv,2026-09-18
+substitution,v,e,1,output/20260830_line_end_chars.csv,2026-09-18
+substitution,v,n,1,output/20260830_line_end_chars.csv,2026-09-18
+substitution,v,s,1,output/20260830_line_end_chars.csv,2026-09-18
+substitution,v,w,3,output/20260830_line_end_chars.csv,2026-09-18
+substitution,v,x,1,output/20260830_line_end_chars.csv,2026-09-18
+substitution,v,y,2,output/20260830_line_end_chars.csv,2026-09-18
+substitution,w,a,3,output/20260830_line_end_chars.csv,2026-09-18
+substitution,w,n,1,output/20260830_line_end_chars.csv,2026-09-18
+substitution,w,r,1,output/20260830_line_end_chars.csv,2026-09-18
+substitution,x,s,1,output/20260830_line_end_chars.csv,2026-09-18
+substitution,y,a,7,output/20260830_line_end_chars.csv,2026-09-18
+substitution,y,d,3,output/20260830_line_end_chars.csv,2026-09-18
+substitution,y,e,9,output/20260830_line_end_chars.csv,2026-09-18
+substitution,y,h,1,output/20260830_line_end_chars.csv,2026-09-18
+substitution,y,i,4,output/20260830_line_end_chars.csv,2026-09-18
+substitution,y,k,2,output/20260830_line_end_chars.csv,2026-09-18
+substitution,y,l,1,output/20260830_line_end_chars.csv,2026-09-18
+substitution,y,p,1,output/20260830_line_end_chars.csv,2026-09-18
+substitution,y,s,1,output/20260830_line_end_chars.csv,2026-09-18
+substitution,y,u,2,output/20260830_line_end_chars.csv,2026-09-18
+substitution,y,v,1,output/20260830_line_end_chars.csv,2026-09-18
+substitution,z,d,1,output/20260830_line_end_chars.csv,2026-09-18
+substitution,z,h,1,output/20260830_line_end_chars.csv,2026-09-18
+substitution,z,k,1,output/20260830_line_end_chars.csv,2026-09-18
+substitution,z,m,1,output/20260830_line_end_chars.csv,2026-09-18
+substitution,z,n,2,output/20260830_line_end_chars.csv,2026-09-18
+substitution,z,o,1,output/20260830_line_end_chars.csv,2026-09-18
+substitution,z,t,2,output/20260830_line_end_chars.csv,2026-09-18
+substitution,z,x,1,output/20260830_line_end_chars.csv,2026-09-18
+substitution,ß,e,1,output/20260830_line_end_chars.csv,2026-09-18
+substitution,ß,g,4,output/20260830_line_end_chars.csv,2026-09-18
+substitution,ß,n,1,output/20260830_line_end_chars.csv,2026-09-18
+substitution,ß,s,1,output/20260830_line_end_chars.csv,2026-09-18
+substitution,ß,t,1,output/20260830_line_end_chars.csv,2026-09-18
+substitution,ä,a,1,output/20260830_line_end_chars.csv,2026-09-18
+deletion,,a,4,git 23f41bc:output/20260918_line_end_truncations.csv (rules 1-6),2026-09-18
+deletion,,c,1,git 23f41bc:output/20260918_line_end_truncations.csv (rules 1-6),2026-09-18
+deletion,,d,4,git 23f41bc:output/20260918_line_end_truncations.csv (rules 1-6),2026-09-18
+deletion,,e,15,git 23f41bc:output/20260918_line_end_truncations.csv (rules 1-6),2026-09-18
+deletion,,f,19,git 23f41bc:output/20260918_line_end_truncations.csv (rules 1-6),2026-09-18
+deletion,,g,8,git 23f41bc:output/20260918_line_end_truncations.csv (rules 1-6),2026-09-18
+deletion,,h,1,git 23f41bc:output/20260918_line_end_truncations.csv (rules 1-6),2026-09-18
+deletion,,i,19,git 23f41bc:output/20260918_line_end_truncations.csv (rules 1-6),2026-09-18
+deletion,,l,78,git 23f41bc:output/20260918_line_end_truncations.csv (rules 1-6),2026-09-18
+deletion,,n,15,git 23f41bc:output/20260918_line_end_truncations.csv (rules 1-6),2026-09-18
+deletion,,o,7,git 23f41bc:output/20260918_line_end_truncations.csv (rules 1-6),2026-09-18
+deletion,,r,35,git 23f41bc:output/20260918_line_end_truncations.csv (rules 1-6),2026-09-18
+deletion,,s,15,git 23f41bc:output/20260918_line_end_truncations.csv (rules 1-6),2026-09-18
+deletion,,t,50,git 23f41bc:output/20260918_line_end_truncations.csv (rules 1-6),2026-09-18
+deletion,,u,1,git 23f41bc:output/20260918_line_end_truncations.csv (rules 1-6),2026-09-18
+deletion,,w,1,git 23f41bc:output/20260918_line_end_truncations.csv (rules 1-6),2026-09-18
+deletion,,y,5,git 23f41bc:output/20260918_line_end_truncations.csv (rules 1-6),2026-09-18
+deletion,,z,1,git 23f41bc:output/20260918_line_end_truncations.csv (rules 1-6),2026-09-18
+deletion,,ó,1,git 23f41bc:output/20260918_line_end_truncations.csv (rules 1-6),2026-09-18
+deletion,,ö,1,git 23f41bc:output/20260918_line_end_truncations.csv (rules 1-6),2026-09-18
+line_ends,,a,16901,"754,609 judgeable line ends, corpus as of 2026-09-18",2026-09-18
+line_ends,,b,9256,"754,609 judgeable line ends, corpus as of 2026-09-18",2026-09-18
+line_ends,,c,448,"754,609 judgeable line ends, corpus as of 2026-09-18",2026-09-18
+line_ends,,d,42372,"754,609 judgeable line ends, corpus as of 2026-09-18",2026-09-18
+line_ends,,e,95355,"754,609 judgeable line ends, corpus as of 2026-09-18",2026-09-18
+line_ends,,f,12649,"754,609 judgeable line ends, corpus as of 2026-09-18",2026-09-18
+line_ends,,g,24913,"754,609 judgeable line ends, corpus as of 2026-09-18",2026-09-18
+line_ends,,h,24274,"754,609 judgeable line ends, corpus as of 2026-09-18",2026-09-18
+line_ends,,i,10755,"754,609 judgeable line ends, corpus as of 2026-09-18",2026-09-18
+line_ends,,j,785,"754,609 judgeable line ends, corpus as of 2026-09-18",2026-09-18
+line_ends,,k,10047,"754,609 judgeable line ends, corpus as of 2026-09-18",2026-09-18
+line_ends,,l,16758,"754,609 judgeable line ends, corpus as of 2026-09-18",2026-09-18
+line_ends,,m,37294,"754,609 judgeable line ends, corpus as of 2026-09-18",2026-09-18
+line_ends,,n,183381,"754,609 judgeable line ends, corpus as of 2026-09-18",2026-09-18
+line_ends,,o,5927,"754,609 judgeable line ends, corpus as of 2026-09-18",2026-09-18
+line_ends,,p,892,"754,609 judgeable line ends, corpus as of 2026-09-18",2026-09-18
+line_ends,,q,1,"754,609 judgeable line ends, corpus as of 2026-09-18",2026-09-18
+line_ends,,r,90597,"754,609 judgeable line ends, corpus as of 2026-09-18",2026-09-18
+line_ends,,s,53992,"754,609 judgeable line ends, corpus as of 2026-09-18",2026-09-18
+line_ends,,t,66065,"754,609 judgeable line ends, corpus as of 2026-09-18",2026-09-18
+line_ends,,u,11420,"754,609 judgeable line ends, corpus as of 2026-09-18",2026-09-18
+line_ends,,v,12036,"754,609 judgeable line ends, corpus as of 2026-09-18",2026-09-18
+line_ends,,w,1841,"754,609 judgeable line ends, corpus as of 2026-09-18",2026-09-18
+line_ends,,x,1048,"754,609 judgeable line ends, corpus as of 2026-09-18",2026-09-18
+line_ends,,y,7834,"754,609 judgeable line ends, corpus as of 2026-09-18",2026-09-18
+line_ends,,z,12285,"754,609 judgeable line ends, corpus as of 2026-09-18",2026-09-18
+line_ends,,ß,4491,"754,609 judgeable line ends, corpus as of 2026-09-18",2026-09-18
+line_ends,,à,31,"754,609 judgeable line ends, corpus as of 2026-09-18",2026-09-18
+line_ends,,á,17,"754,609 judgeable line ends, corpus as of 2026-09-18",2026-09-18
+line_ends,,ä,8,"754,609 judgeable line ends, corpus as of 2026-09-18",2026-09-18
+line_ends,,å,1,"754,609 judgeable line ends, corpus as of 2026-09-18",2026-09-18
+line_ends,,é,320,"754,609 judgeable line ends, corpus as of 2026-09-18",2026-09-18
+line_ends,,ë,43,"754,609 judgeable line ends, corpus as of 2026-09-18",2026-09-18
+line_ends,,ï,2,"754,609 judgeable line ends, corpus as of 2026-09-18",2026-09-18
+line_ends,,ò,1,"754,609 judgeable line ends, corpus as of 2026-09-18",2026-09-18
+line_ends,,ó,231,"754,609 judgeable line ends, corpus as of 2026-09-18",2026-09-18
+line_ends,,ö,119,"754,609 judgeable line ends, corpus as of 2026-09-18",2026-09-18
+line_ends,,ù,2,"754,609 judgeable line ends, corpus as of 2026-09-18",2026-09-18
+line_ends,,ü,24,"754,609 judgeable line ends, corpus as of 2026-09-18",2026-09-18
+line_ends,,ý,182,"754,609 judgeable line ends, corpus as of 2026-09-18",2026-09-18
+line_ends,,ÿ,11,"754,609 judgeable line ends, corpus as of 2026-09-18",2026-09-18

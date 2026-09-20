@@ -50,17 +50,23 @@ finer resolution (one specific line) that is designed but not yet built.
 ```
                       data/xml/  (787 issues, Transkribus TEI)
                           |
-      +-------------------+------------------------------------+
-      |                   |                                    |
-      v                   v                                    v
- [A] STATISTICS      [C] CONTEXT MODEL                   [B] SIDE CHANNEL
- validate_line_      resolve_line_end_context.py         hyphen_decisions.csv
- end_chars.py        (the "ambiguous" class)             (notes from the
-      |                   |                               hyphen LLM run)
+      +----------+--------+------------------------------------+
+      |          |        |                                    |
+      v          v        v                                    v
+ [A] STATISTICS  |   [C] CONTEXT MODEL                   [B] SIDE CHANNEL
+ validate_line_  |   resolve_line_end_context.py         hyphen_decisions.csv
+ end_chars.py    |   (the "ambiguous" class)             (notes from the
+      |          |        |                               hyphen LLM run)
+      |          v        |                                    |
+      |  [A2] TRUNCATIONS |                                    |
+      |  validate_line_end_truncations.py                      |
+      |  (letters DROPPED, not misread)                        |
+      |          |        |                                    |
       |                   |                                    |
       v                   v                                    v
  OK / MISREAD /      margin score per OCCURRENCE          extract_ocr_
- REVIEW per TOKEN    (writes NOTHING)                     corrections.py
+ REVIEW per TOKEN    (writes no CORRECTION)               corrections.py
+      |         review CSV + JSONL, no resolver yet            |
       |                   |                                    |
       |                   v                                    |
       |              output/*_line_end_sample.csv              |
@@ -201,6 +207,57 @@ So the confident verdicts are written as `source=rule`, the lowest rank in the
 store — a proposal, not a verdict. **This is the design principle of the whole
 folder: the detector never writes into `data/xml/`.**
 
+### Stage A2 — the truncations (`validate_line_end_truncations.py`)
+
+The second of those two failure modes got its own detector. `Scht → Schw` is
+not a misread letter, it is a *dropped* one, and no substitution can repair it:
+the candidates have to be **added** letters rather than a swapped final one.
+
+Same lexicon, turned around — a line-final token is flagged when it is
+essentially unknown inside a line, but adding one letter gives a word the corpus
+uses. Six filters do the work, and two of them came out of the hand check:
+
+```
+INPUT   data/xml/*.xml   (interior lexicon + a prefix index over it)
+        v
+FLAG    1  the line does not end in a break mark   (a fragment is the hyphens' job)
+        2  the raw token ends in a LETTER          (strongest single filter:
+                                                    kills "Frank,", "Tir.", "geg.")
+        3  stripped token unknown inside a line    (--max-observed 1)
+        4  adding ONE letter gives a known word    (--min-count 10)
+        5  it is not a dropped hyphen              ("Öster | reich-Este")
+        6  some completion is attested beside this
+           token's actual neighbours               (--keep-unsupported lifts it)
+        v
+OUTPUT  output/<date>_line_end_truncations.csv
+        --export-review >>> JSONL   (no resolver yet)
+```
+
+**Hand-checked at 38% against the plan's 80% bar** (60 rows, 2026-09-18), which
+is why rules 4 and 6 exist — they are what the sample taught:
+
+```
+                                          rows   truncated
+    one letter missing                      40      22   (55%)
+    two or three letters                    20       1   ( 5%)
+    a completion seen beside a neighbour    29      22   (76%)
+    none seen                               31       1   ( 3%)
+    both                                    25      21   (84%)
+```
+
+The neighbour test was written down *before* the labels existed and then held on
+the half of the sample nobody had looked at — 11 of 16 against 0 of 14. That is
+the difference between a rule and a rationalisation, and it is worth saying out
+loud. 84% is 21 of 25 rows: an estimate, not a guarantee.
+
+What the two rules remove is mostly correct German that is merely rare
+(`selbständige`, `olympische`, whose `-n` form is commoner), then names and
+foreign words, then compounds split over a dropped hyphen — which no frequency
+test can settle, because the compound occurs nowhere else.
+
+Its deletion rates feed `resolve_line_end_context.py`, which is how the context
+model learned to propose one-letter completions as well as substitutions.
+
 ---
 
 ## 4. Stage B — the LLM gate (`resolve_line_end_llm.py`)
@@ -327,15 +384,23 @@ INPUT   data/xml/*.xml   (reads the corpus itself; NOT stage A's jsonl)
 SCORE   for each ambiguous line end, score every candidate reading against its
         left and right neighbour; report the MARGIN between best and observed
         v
-OUTPUT  --score          margin distribution, what each gate would flag
-        --evaluate       "free gold standard": held-out line-INTERIOR
-                         occurrences, where the answer is known for nothing
-        --calibrate      fits the noisy-channel term (r->n 508 vs 36 reverse)
-        --export-sample  output/<date>_line_end_sample.csv  >>> a human
+OUTPUT  --score            margin distribution, what each gate would flag
+        --evaluate         "free gold standard": held-out line-INTERIOR
+                           occurrences, where the answer is known for nothing
+        --calibrate        fits the noisy-channel term (r->n 508 vs 36 reverse)
+        --calibrate --write  freezes it to data/csv/line_end_channel.csv,
+                           which every later run reads
+        --channel P        fit from this verdict CSV for one run instead
+        --truncations P    deletion rates, from validate_line_end_truncations.py
+        --no-channel       rank by the context margin alone, as before 2026-09-17
+        --no-completions   drop the one-letter-completion candidates
+        --export-sample    output/<date>_line_end_sample.csv  >>> a human
 ```
 
-**It writes no correction. At all.** That is deliberate, and it is the single
-most quotable number in the whole pipeline:
+**It writes no correction.** `--calibrate --write` writes one thing, and it is a
+*model* rather than a verdict: the fitted channel, frozen to
+`data/csv/line_end_channel.csv`. Nothing it produces reaches the XML. That is
+deliberate, and the reason is the single most quotable number in the pipeline:
 
 > Being right 89% of the time is nowhere near good enough when 99.5% of the
 > input is already correct. Simulated at a 0.5% error rate, plain argmax over
@@ -401,14 +466,33 @@ on every line-final `dorf`, the place names included, and the only remedy today
 is retiring the whole row with `approved=no` — all or nothing, where an
 occurrence store would keep the fix for the real misreadings.
 
-### Status: honest version
+### Status: honest version (2026-09-18)
 
-Phases 2–3 (`--score`, `--evaluate`, `--calibrate`) are built and have been run
-over the full corpus. Phases 4–6 — the occurrence store
+**Phases 1–3 are done.** Phase 1 is two hand-checked samples — 271 rows on
+2026-08-30 and 300 on 2026-09-04 — which between them set the five gates on
+what may be proposed at all. Phase 3's channel term passed its test and now
+orders the queue:
+
+    AUC over the flat margin, on the second sample     0.644 -> 0.791
+
+The fitted channel is frozen in `data/csv/line_end_channel.csv` (1,646
+substitutions and 281 one-letter deletions over 754,609 line ends) and every
+later run reads it. One-letter *completions* were added as candidates at the
+same time — the truncation class, with deletion rates from
+`validate_line_end_truncations.py` — and those are **unvalidated**: no hand
+check has measured them yet.
+
+**Phases 4–6 are still unbuilt** — the occurrence store
 `data/csv/line_end_occurrences.csv`, `--export-review`, `--resolve`, and
-consumption by `correct_xml_ocr.py` — are **deliberately unbuilt** until the
-hand-checked sample says what the gate is worth. So today this stage is a
-**measuring instrument and a detector**, not a corrector.
+consumption by `correct_xml_ocr.py`. The reason has changed, and it is a better
+one than "waiting on the sample": the corpus was **re-exported from Transkribus
+on 2026-09-18**, and about **110 of the errors the two hand checks confirmed
+were corrected there by hand**. A queue built before that re-export would have
+sent all of them to the model again.
+
+So today this stage is a **measuring instrument and a detector**, not a
+corrector — and the next move is to rebuild the queue against the re-exported
+corpus.
 
 ---
 
@@ -503,7 +587,8 @@ later re-run does not propose it again.
 | `validate_line_end_chars.py` | `data/xml/` | `output/<date>_line_end_chars.csv`; `ocr_corrections.csv` (`rule`); `output/<date>_linechar_review.jsonl` | detector, corpus statistics, per token |
 | `resolve_line_end_llm.py` | that JSONL + `data/prompts/prompt_ocr_correction.txt` | `ocr_corrections.csv` (`llm`, wildcard) | judge |
 | `extract_ocr_corrections.py` | `hyphen_decisions.csv` notes | `ocr_corrections.csv` (`llm`, pair) | second detector, from exhaust |
-| `resolve_line_end_context.py` | `data/xml/` | reports; `output/<date>_line_end_sample.csv` | detector for the class stats cannot see — **writes no correction** |
+| `validate_line_end_truncations.py` | `data/xml/` | `output/<date>_line_end_truncations.csv`; `--export-review` JSONL | detector for DROPPED letters — the class a substitution cannot repair |
+| `resolve_line_end_context.py` | `data/xml/`, `line_end_channel.csv` | reports; `output/<date>_line_end_sample.csv`; the fitted channel | detector for the class stats cannot see — **writes no correction** |
 | `ocr_corrections.py` | — | — | the store: schema, `manual > llm > rule`, `merge()` |
 | `correct_xml_ocr.py` | `data/xml/`, `replacement.csv`, `ocr_corrections.csv` | `data/xml/`, `output/<date>_ocr_corrections_applied.csv` | the only writer to the XML |
 | `context_model.py`, `llm_backend.py` | — | — | shared by every review loop in `lineends` |

@@ -63,8 +63,8 @@ a threshold:
     Geno -> Genf      dropped characters rather than misreading one. No
                       single-character substitution can repair it, and
                       proposing one makes the text worse than leaving it alone.
-                      That class belongs to a different detector; see
-                      docs/ocr-word-correction.md.
+                      That class belongs to a different detector:
+                      validate_line_end_truncations.py.
 
 So the confident verdicts go into the correction store as `source=rule`, which
 `resolve_line_end_llm.py` can overturn and which `correct_xml_ocr.py` applies

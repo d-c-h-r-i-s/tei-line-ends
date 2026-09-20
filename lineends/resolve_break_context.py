@@ -586,7 +586,10 @@ def resolve(queue_path: Path, store: Path, backend: str, model: str,
 
     Breaks already settled by an `llm` or `manual` row are skipped before any
     request, so a rerun costs nothing and an interrupted run resumes where it
-    stopped. A failure of the *server* stops the run rather than being written
+    stopped. Settled means a row about *this* break: after a re-export a line
+    id can name a line whose word pair has changed, and a row about the old
+    pair is asked again rather than taken as the answer (`Occurrence.matches`,
+    which every other reader of the store already checks). A failure of the *server* stops the run rather than being written
     down as a verdict: an unreachable server says nothing about the break, and
     recording it as an answer would be the one error this store cannot detect
     later.
@@ -605,11 +608,21 @@ def resolve(queue_path: Path, store: Path, backend: str, model: str,
         print(f"Shard {shard}: {len(questions):,} of the queue")
 
     settled = break_occurrences.load(store)
-    pending = [q for q in questions
-               if settled.get((q['file'], q['line_facs'])) is None
-               or settled[(q['file'], q['line_facs'])].source == 'rule']
+
+    def answered(question: dict) -> bool:
+        row = settled.get((question['file'], question['line_facs']))
+        return (row is not None and row.source != 'rule'
+                and row.matches(question['left'], question['right']))
+
+    pending = [q for q in questions if not answered(q)]
+    stale = sum(1 for q in pending
+                if (q['file'], q['line_facs']) in settled
+                and not settled[(q['file'], q['line_facs'])].matches(
+                    q['left'], q['right']))
     print(f"{len(questions):,} breaks in the queue, {len(pending):,} still "
-          f"unanswered", flush=True)
+          f"unanswered"
+          + (f" ({stale:,} of them answered for a pair no longer there)"
+             if stale else ''), flush=True)
     if not pending:
         return 0
 

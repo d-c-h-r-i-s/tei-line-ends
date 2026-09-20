@@ -17,6 +17,7 @@ detectors.
 | `ocr_corrections.csv` | a word that is wrong **at a line break** | `validate_line_end_chars.py`, `resolve_line_end_llm.py`, `extract_ocr_corrections.py` | `correct_xml_ocr.py` |
 | `hyphen_decisions.csv` | how a word **pair** at a break should be written | `resolve_hyphens_llm.py` | `correct_xml_hyphens.py` |
 | `hyphen_occurrences.csv` | how **one specific break** should be written | `resolve_break_context.py` | `correct_xml_hyphens.py` |
+| `line_end_channel.csv` | how often the OCR turns one final letter into another, or drops one | `resolve_line_end_context.py --calibrate --write` | `resolve_line_end_context.py`, to rank its queue |
 | `transkribus_filenames.csv` | issue → Transkribus document id | by hand — see [../../docs/transkribus-links.md](../../docs/transkribus-links.md) | every validator, for links |
 
 A store the scripts create themselves does not have to exist beforehand; a
@@ -41,6 +42,36 @@ Never put a *positional* error here. `Wier` is a misreading of `Wien` at a line
 end and a fine token in the middle of a line; a global rule would corrupt every
 innocent occurrence. Those belong in `ocr_corrections.csv`, which is keyed by
 position.
+
+## `line_end_channel.csv` — the one fitted artifact
+
+Unlike everything else here, this is a **model, not a set of verdicts**, and it
+is the one file that ships fitted on the Wiener Salonblatt corpus: 1,646
+substitutions and 281 one-letter deletions measured over 754,609 line ends of
+Antiqua-set German, 1914–1938.
+
+That is safe to ship where a decision store would not be, because of what it
+does. It ranks the queue — which line ends are worth asking about first — and
+never decides anything. A channel fitted on the wrong corpus costs you queue
+order, not correct text. The script prints which channel it loaded on every run,
+and degrades to margin-only ranking if the file is absent:
+
+```
+  channel: line_end_channel.csv, fitted 2026-09-18: 1,646 substitutions,
+           281 one-letter deletions over 754,609 line ends
+```
+
+Refit it on your own corpus once you have run the two detectors:
+
+```bash
+python lineends/resolve_line_end_context.py --calibrate --write
+python lineends/resolve_line_end_context.py --score --no-channel   # or turn it off
+```
+
+The asymmetry is the physical fact the whole detector rests on: a final `n`
+clipped by the margin comes out as `r` about fourteen times more often than the
+reverse. A corpus in another typeface will have different rates — which is
+exactly why refitting is one command.
 
 ## Ranking, in every store that a model writes to
 

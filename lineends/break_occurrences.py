@@ -188,11 +188,18 @@ def merge(path: Path, new_occurrences: Iterable[Occurrence],
     answered changes nothing, and a hand-made decision is never undone by a
     rerun. To revisit a break, delete its row.
 
+    The exception is a row about a *different* break. A re-export can hand a
+    `facs` id to a line whose word pair has changed - an OCR correction, an
+    edit in Transkribus - and a verdict on the old pair answers nothing about
+    the new one, whatever its rank. So an incoming row for another pair
+    replaces it; 188 of 2,842 rows were in that state after the re-export of
+    2026-09-18.
+
     Returns:
-        (added, updated)
+        (added, updated) - `updated` including the stale rows replaced
     """
     occurrences = load(path)
-    added = updated = 0
+    added = updated = replaced = 0
 
     for occurrence in new_occurrences:
         if not occurrence.decided_on:
@@ -201,6 +208,9 @@ def merge(path: Path, new_occurrences: Iterable[Occurrence],
         if previous is None:
             occurrences[occurrence.key] = occurrence
             added += 1
+        elif not previous.matches(occurrence.left, occurrence.right):
+            occurrences[occurrence.key] = occurrence
+            replaced += 1
         elif occurrence.rank > previous.rank:
             occurrences[occurrence.key] = occurrence
             updated += 1
@@ -222,5 +232,7 @@ def merge(path: Path, new_occurrences: Iterable[Occurrence],
     if not quiet:
         pairs = len({o.pair for o in occurrences.values()})
         print(f"Occurrence store: {len(occurrences):,} breaks over {pairs:,} "
-              f"pairs ({added:,} added, {updated:,} updated) -> {path}")
-    return added, updated
+              f"pairs ({added:,} added, {updated:,} updated"
+              + (f", {replaced:,} stale replaced" if replaced else '')
+              + f") -> {path}")
+    return added, updated + replaced

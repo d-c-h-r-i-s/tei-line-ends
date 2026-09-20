@@ -5,9 +5,11 @@ only because a line ended there, and a method for correcting them that needs no
 dictionary and never lets a machine write to the transcription unsupervised.
 
 Extracted from the [Wiener Salonblatt](https://anno.onb.ac.at/) corpus project:
-787 issues of a Viennese society newspaper, 1919–1938, transcribed in
-Transkribus. The tools are corpus-independent; the measurements quoted
-throughout come from that corpus.
+787 issues of a Viennese society newspaper, 1914–1938, set in Antiqua and
+transcribed in Transkribus. (The earlier issues, 1913 and before, are Fraktur
+and not yet processed; the hyphen scripts already handle both notations —
+Antiqua's `¬`/`-` and Fraktur's `=`.) The tools are corpus-independent; the
+measurements quoted throughout come from that corpus.
 
 ---
 
@@ -82,10 +84,11 @@ decision down to the single occurrence.
 ### Line-final characters
 
 ```
-validate_line_end_chars.py  rule verdicts per token: OK / MISREAD / REVIEW
-      >>> resolve_line_end_llm.py    a local model confirms or overturns
-extract_ocr_corrections.py  a second detector, from the hyphen run's notes
-resolve_line_end_context.py the class statistics cannot see (der/den/dem)
+validate_line_end_chars.py       a MISREAD letter, per token: OK / MISREAD / REVIEW
+      >>> resolve_line_end_llm.py     a local model confirms or overturns
+validate_line_end_truncations.py a DROPPED letter - the class no substitution repairs
+extract_ocr_corrections.py       a second detector, from the hyphen run's notes
+resolve_line_end_context.py      the class statistics cannot see (der/den/dem)
             >>> data/csv/ocr_corrections.csv
                   >>> correct_xml_ocr.py       applies them
 ```
@@ -149,6 +152,12 @@ decisions, which are about one specific corpus. See
 [data/csv/README.md](data/csv/README.md) for what each store holds and how the
 `manual > llm > rule` ranking works.
 
+`data/csv/line_end_channel.csv` ships fitted on this corpus — how often the OCR
+turns one final letter into another, and how often it drops one. It is a
+*ranking* input, not a verdict: a wrong channel costs you queue order, not
+correctness, and `--no-channel` turns it off. Refit it on your own corpus with
+`--calibrate --write`.
+
 Two things are genuinely German and are worth knowing before you start: the
 alphabet `validate_line_end_chars.py` substitutes over includes `äöüß`, and the
 prompts in `data/prompts/` are written in German about German orthography. The
@@ -164,13 +173,17 @@ be named differently.
 |---|---|
 | hyphen chain | complete, run over 787 issues |
 | line-final characters, rule + LLM | complete, run over 787 issues |
-| `resolve_line_end_context.py` | **scores and measures; does not correct** |
+| `validate_line_end_truncations.py` | detector only, no resolver. Hand-checked at **38%**, against the 80% bar its plan set |
+| `resolve_line_end_context.py` | phases 1–3 done; **scores and measures, does not correct** |
 
-The per-occurrence line-end stage is deliberately unfinished: the store and the
-resolver are not built, because the hand-checked sample has to say what the gate
-is worth first. What it measured so far — including the three failure
-populations no margin can separate, and a window-size experiment that changed
-**0 margins and 0 proposals** — is in
+The per-occurrence line-end stage is deliberately unfinished. Its five gates and
+its noisy-channel term are built and measured — the channel lifted ranking from
+**0.644 to 0.791 AUC** over the flat margin — but the store, the resolver and
+the consumption step are not, because the corpus was re-exported from
+Transkribus on 2026-09-18 and a queue built before that would re-ask about
+errors already fixed by hand. What it measured so far, including the three
+failure populations no margin can separate and a window-size experiment that
+changed **0 margins and 0 proposals**, is in
 [docs/line-end-context-correction.md](docs/line-end-context-correction.md).
 
 No sample corpus ships with the repo: the transcriptions are not ours to

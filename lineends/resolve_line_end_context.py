@@ -78,22 +78,94 @@ Together: 264 usable rows drop to 111, precision 17.0% -> 36.0%, and 40 of the
 45 confirmed corrections survive. Over the corpus that is 3,598 proposals at
 margin >= 6 down to 2,048.
 
-Why the answer is not "more context"
-------------------------------------
-The obvious reading of the remaining 69 errors is that the window is too
-narrow - "eine Abordnung ungarischer Pilger" needs the quantifier three tokens
-back. It is the right diagnosis and the wrong fix, because `ContextModel` is a
-*bigram* model: both readings occupy the same single slot, so every term beyond
-the adjacent token is identical under both and cancels out of the margin. Re-
-scoring all 264 checked rows at windows of 2, 3 and 5 changes 0 margins and 0
-proposals. See `ContextModel.margin`, which says the same thing about the
-sibling stage. More context means a higher-order model or the LLM, never a
-window parameter - which is what the division of labour above already assumes.
+The second sample (300 rows drawn through those gates, 89 y / 211 n) came
+back at 80% for margin >= 16 and 10-25% below it - the 36% was optimistic,
+having been measured on the sample the gates were designed on. It confirmed
+two more populations the first had shown, now gates as well:
+
+  * **the token carries its own punctuation: 19 checked, 0 right.** Eleven are
+    "kgl. ung." proposed as "und". The full stop ended the line, not the
+    letter before it, so that letter is not where the damage happens.
+  * **no attested bigram on the left: 46 checked, 3 right (6.5%)** - 8.3% in
+    the first sample.
+
+With all five, that sample's 294 matchable rows keep 229 at 37.1%, 85 of the
+88 confirmed corrections among them.
+
+The channel term (phase 3)
+--------------------------
+The plan's third phase, and its acceptance test: the noisy-channel term
+`P(observed | candidate)` from `Channel`, "kept only if it beats the flat
+margin" on the hand-checked sample. It does. Ranking that sample's rows by
+margin + channel instead of the margin alone, weighted back to the corpus:
+
+                              flat margin    margin + channel
+    ranking quality (AUC)        0.644            0.791
+      within the five gates      0.688            0.833
+    top 200, five gates          62% right        71% right
+    top 400, five gates          43% right        50% right
+
+1,000 stratified bootstraps put the gain at +0.145 [+0.072, +0.226], never at
+or below zero. The counts come from other scripts' verdicts, not from this
+sample, so nothing was tuned on it. The one place the channel disagrees with
+the labels is `m`/`n`: it has `m -> n` as the commoner misread, the sample was
+right on `n -> m` 10 times in 23 and on `m -> n` never.
+
+The channel orders the queue; the margin still defines it. `proposals` gates
+on the margin because that is what the samples were stratified on.
+
+Completions (unvalidated)
+-------------------------
+Since 2026-09-17 the candidates include the token with one letter added, so a
+cut-off final letter can be proposed back: "wie immer [au] einem" was put to
+the reviewer as "an", and "auf" was never on offer. The channel is what lets a
+completion compete with a substitution, cut and misread letters being
+different damage at different rates.
+
+**No labelled row has judged a completion yet.** What is known: of the 294
+matchable rows of the second sample, 9 now propose something else, all 9
+marked wrong in their old form - "is -> ist" and "au -> auf" twice, which the
+reviewer had found cut off, and six other inflections that sit at the bottom
+of the queue (score -3 to +5). Over the corpus completions add 2,445 proposals
+at margin >= 6, 492 of them past the gates, and they bring a new kind of false
+positive: "sportliche Ereignisse", a boilerplate sentence, is proposed as
+"sportlichen" 32 times. `--no-completions` restores the substitution-only
+queue.
+
+The deletion rates were refitted on 2026-09-18 from the truncation detector's
+checked output (rules 1-6, 84% precise on its own sample) instead of its raw
+hits. That cut the rate for a lost final `n` fivefold (79 -> 15 line ends):
+most raw `n` hits were correct rare forms like "selbständige". It moved the
+completions down the queue - 79 -> 72 in the top 200, 152 -> 135 in the top
+400 - and "sportlichen" from ranks 130-161 to 170-201. So it does not remove
+that false positive; only a reader of the sentence does.
+
+More context: yes for the LLM, no for the scorer
+-----------------------------------------------
+The remaining 69 errors are words whose form is settled further away than the
+neighbouring word - "eine Abordnung ungarischer Pilger" needs the quantifier
+three tokens back, "stiegen im »Hotel Panhans« ab" the verb on the line before.
+The hand check's conclusion is that they need more words either side of the
+break, and that is right for the one reader able to use them.
+
+It is not something the *scorer* can use. `ContextModel` is a bigram model:
+both readings occupy the same single slot, so every term beyond the adjacent
+token is identical under both and cancels out of the margin. Re-scoring all 264
+checked rows with 2, 3 and 5 words either side changes 0 margins and 0
+proposals (see `ContextModel.margin`, which says the same about the sibling
+stage). The scorer only decides what gets asked.
+
+So the extra words belong in what the LLM is shown. Its context must cross line
+boundaries - `ab` and its verb are usually on different lines - which the
+sibling stage's prompt does not do: `resolve_break_context.Break` takes its
+`before` from the current line alone. `context_string`, which the hand-check
+CSV shows, gives only one word of the following line and should widen too.
 
 Usage:
     python resolve_line_end_context.py --score
     python resolve_line_end_context.py --evaluate
     python resolve_line_end_context.py --calibrate
+    python resolve_line_end_context.py --calibrate --write
     python resolve_line_end_context.py --export-sample line_end_sample.csv
 
 Author: Christian Lendl
@@ -103,6 +175,7 @@ Created: 2026-08-30
 import argparse
 import csv
 import datetime
+import math
 import random
 import sys
 from collections import Counter, defaultdict
@@ -158,9 +231,19 @@ class LineEnd:
     previous: Optional[str]
     following: Optional[str]
     line: str
+    # The whole next line, for the context a reviewer or a model is shown -
+    # `following` is only its first token, which is all the scorer can use.
+    next_line: Optional[str] = None
     candidates: List[str] = field(default_factory=list)
     best: str = ''
+    # The context model's preference for `best` over the transcription, and
+    # the channel's: how much likelier the OCR is to have left the text as it
+    # stands than to have produced it from `best`. `score` is their sum, and it
+    # is what orders the queue. `margin` alone is what the bands and the
+    # hand-check strata are defined on, so it stays as it was.
     margin: float = 0.0
+    channel: float = 0.0
+    score: float = 0.0
     # Whether the corpus has ever seen this token beside that neighbour, under
     # either reading. Set by `score_all`; read by `gate_reason`, where the
     # right-hand one is the single strongest signal in the whole stage.
@@ -170,6 +253,17 @@ class LineEnd:
     @property
     def band(self) -> str:
         return 'short' if len(self.observed) < VALIDATOR_MIN_LENGTH else 'long'
+
+    @property
+    def raw_token(self) -> str:
+        """The final token as transcribed, punctuation and all."""
+        return self.line.split()[-1]
+
+    @property
+    def kind(self) -> str:
+        """`completion` when `best` adds a letter, `substitution` when it swaps one."""
+        return ('completion' if len(self.best) == len(self.observed) + 1
+                else 'substitution')
 
     @property
     def has_next(self) -> bool:
@@ -191,16 +285,27 @@ def is_initial(word: str) -> bool:
 
 
 def candidates_for(word: str, interior: Counter,
-                   min_candidate: int = MIN_CANDIDATE) -> List[str]:
+                   min_candidate: int = MIN_CANDIDATE,
+                   completions: bool = False) -> List[str]:
     """
     The readings of this line-final token: itself, plus every attested
-    one-character substitution of its final letter.
+    one-character substitution of its final letter, and with `completions`
+    every attested word it becomes with one letter added.
 
     `--confusions all` is the validator's default and is what is used here: the
     signature error is a final `n` read as `r`, but the same test over every
     final letter finds `l->n`, `s->e`, `e->t` and more behaving identically,
     and restricting the set by hand is how the first measurement of this model
     came to flatter it.
+
+    Completions are the other thing the margin does to a final letter: it cuts
+    it off. "wie immer [au] einem" was proposed as "an" in the 2026-09-04
+    sample, and "auf" was never on offer. `validate_line_end_truncations.py`
+    finds the cut-off words that are not words; this is where the ones that
+    are - "au", "de", "is" - get a candidate. One letter only: two- and
+    three-letter truncations of a known word into another known word are
+    rarer than the false candidates they would bring. `--evaluate` keeps them
+    off, so its figures stay comparable with the ones already recorded.
     """
     final = word[-1].lower()
     found = [word]
@@ -210,6 +315,10 @@ def candidates_for(word: str, interior: Counter,
         variant = word[:-1] + char
         if interior[variant] >= min_candidate:
             found.append(variant)
+    if completions:
+        for char in ALPHABET:
+            if interior[word + char] >= min_candidate:
+                found.append(word + char)
     return found
 
 
@@ -265,15 +374,16 @@ def collect(xml_folder: Path, max_files: Optional[int], skip_subtypes,
                     continue
                 previous = (hyphens.strip_token(tokens[-2])
                             if len(tokens) >= 2 else None)
-                following = None
+                following = next_line = None
                 if index + 1 < len(lines):
-                    tail = lines[index + 1][1].split()
+                    next_line = lines[index + 1][1]
+                    tail = next_line.split()
                     if tail:
                         following = hyphens.strip_token(tail[0])
                 raw.append(LineEnd(file=path.name, line_facs=line_facs,
                                    page=page, subtype=subtype, observed=word,
                                    previous=previous, following=following,
-                                   line=line))
+                                   line=line, next_line=next_line))
         if not quiet and number % 200 == 0:
             print(f"  {number}/{len(files)} files")
 
@@ -288,10 +398,11 @@ def collect(xml_folder: Path, max_files: Optional[int], skip_subtypes,
 
 
 def ambiguous(raw: List[LineEnd], interior: Counter, min_length: int,
-              min_candidate: int) -> List[LineEnd]:
+              min_candidate: int, completions: bool = True) -> List[LineEnd]:
     """
     Keep the line ends this script is for: the observed spelling is itself a
-    word, and at least one substitution of its final letter is also a word.
+    word, and at least one substitution of its final letter - or, with
+    `completions`, one added letter - is also a word.
 
     Everything else is either `validate_line_end_chars.py`'s job (the observed
     spelling is unattested, so frequency settles it) or nobody's.
@@ -302,7 +413,8 @@ def ambiguous(raw: List[LineEnd], interior: Counter, min_length: int,
             continue
         if interior[item.observed] < AMBIGUOUS_AT:
             continue
-        found = candidates_for(item.observed, interior, min_candidate)
+        found = candidates_for(item.observed, interior, min_candidate,
+                               completions)
         if len(found) < 2:
             continue
         item.candidates = found
@@ -310,14 +422,172 @@ def ambiguous(raw: List[LineEnd], interior: Counter, min_length: int,
     return kept
 
 
-def score_all(items: List[LineEnd], model: ContextModel) -> None:
+class Channel:
+    """
+    `P(observed | intended)` for a line's final letter: how the OCR damages it.
+
+    Two kinds of damage, each counted from the detector that finds it where
+    frequency alone settles the question:
+
+      substitutions   `validate_line_end_chars.py`'s MISREAD verdicts - a final
+                      `n` read as `r` 508 times, the reverse 36 (`load_channel`)
+      deletions       `validate_line_end_truncations.py`'s one-letter hits - a
+                      final letter not read at all (`load_deletions`)
+
+    Each is turned into a rate over the line ends whose final letter is the
+    intended one, so a frequent letter is not credited with more damage merely
+    for being frequent. Both detectors only see damage that produces a
+    non-word, so both rates are low by the same kind of margin; what the term
+    has to get right is how they compare - `r -> n` against `n -> r`, a
+    misread against a cut - and that is what the 2026-09-04 sample tested.
+
+    The deletion counts are the truncation detector's output after its six
+    rules, which its hand-check sample put at 84% (21 of 25). The substitution
+    counts are statistical verdicts, surnames and truncations included, and the
+    term built on them still beat the flat margin (see the module docstring).
+
+    **Frozen in `data/csv/line_end_channel.csv`**, denominators included, and
+    read from there by default. It used to be refitted from the newest reports
+    in `output/` on every run, which quietly changed the model whenever a
+    detector ran again: after the corrections of 2026-09-18 the detectors find
+    fewer errors - the fixed ones are gone - and the rates would have dropped
+    for no reason to do with the OCR. A same-day rerun even overwrote the very
+    report the rates had been tested with. Refitting is now a deliberate step,
+    `--calibrate --write`, and the file records what each count came from.
+    """
+
+    # Added to every count, so a damage nobody has observed is rare rather
+    # than impossible - an impossible correction could never be proposed.
+    SMOOTHING = 0.5
+
+    def __init__(self, substitutions: Dict[Tuple[str, str], int],
+                 deletions: Counter, finals: Counter):
+        self.substitutions = substitutions
+        self.deletions = deletions
+        self.finals = finals
+        self.damaged: Counter = Counter()
+        for (_, intended), n in substitutions.items():
+            self.damaged[intended] += n
+        for letter, n in deletions.items():
+            self.damaged[letter] += n
+
+    def _rate(self, count: float, intended: str) -> float:
+        return (count + self.SMOOTHING) / max(self.finals[intended], 1)
+
+    def log_ratio(self, observed: str, candidate: str) -> float:
+        """
+        `log P(observed | candidate) - log P(observed | observed)`.
+
+        Negative for every real correction: it is what the context evidence has
+        to overcome before overturning the transcription, and it is larger for
+        a damage the OCR rarely does.
+        """
+        own = observed[-1].lower()
+        keep = 1 - self.damaged[own] / max(self.finals[own], 1)
+        if len(candidate) == len(observed) + 1:
+            intended = candidate[-1].lower()
+            damage = self._rate(self.deletions[intended], intended)
+        else:
+            intended = candidate[-1].lower()
+            damage = self._rate(self.substitutions.get((own, intended), 0),
+                                intended)
+        return math.log(damage) - math.log(max(keep, 1e-9))
+
+
+CHANNEL_FILE = PATHS['csv'] / 'line_end_channel.csv'
+CHANNEL_FIELDS = ['kind', 'observed', 'intended', 'count', 'source',
+                  'fitted_on']
+
+
+def save_channel(channel: 'Channel', path: Path,
+                 sources: Dict[str, str]) -> None:
+    """
+    Write the channel as three kinds of row: `substitution` (observed ->
+    intended final letter), `deletion` (the intended final letter was lost)
+    and `line_ends` (how many line ends the corpus had with that final letter
+    - the denominator every rate is taken over, frozen with the counts so the
+    rates cannot drift when the corpus grows).
+    """
+    today = datetime.date.today().isoformat()
+    rows = [('substitution', observed, intended, n)
+            for (observed, intended), n in sorted(channel.substitutions.items())]
+    rows += [('deletion', '', letter, n)
+             for letter, n in sorted(channel.deletions.items())]
+    rows += [('line_ends', '', letter, n)
+             for letter, n in sorted(channel.finals.items())]
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with open(path, 'w', newline='', encoding='utf-8') as fh:
+        writer = csv.DictWriter(fh, fieldnames=CHANNEL_FIELDS,
+                                lineterminator='\n')
+        writer.writeheader()
+        for kind, observed, intended, n in rows:
+            writer.writerow({'kind': kind, 'observed': observed,
+                             'intended': intended, 'count': n,
+                             'source': sources[kind], 'fitted_on': today})
+    print(f"Channel written to: {path}  ({len(rows)} rows)")
+
+
+def read_channel(path: Path) -> Tuple['Channel', str]:
+    """The frozen channel, and a one-line account of where it came from."""
+    substitutions: Dict[Tuple[str, str], int] = Counter()
+    deletions: Counter = Counter()
+    finals: Counter = Counter()
+    fitted = set()
+    with open(path, newline='', encoding='utf-8') as fh:
+        for row in csv.DictReader(fh):
+            n = int(row['count'])
+            if row['kind'] == 'substitution':
+                substitutions[(row['observed'], row['intended'])] += n
+            elif row['kind'] == 'deletion':
+                deletions[row['intended']] += n
+            elif row['kind'] == 'line_ends':
+                finals[row['intended']] += n
+            fitted.add(row.get('fitted_on', ''))
+    account = (f"{path.name}, fitted {', '.join(sorted(fitted))}: "
+               f"{sum(substitutions.values()):,} substitutions, "
+               f"{sum(deletions.values()):,} one-letter deletions over "
+               f"{sum(finals.values()):,} line ends")
+    return Channel(substitutions, deletions, finals), account
+
+
+def load_deletions(path: Path) -> Counter:
+    """
+    How often each final letter was cut off, from a truncation report.
+
+    One-letter rows only, keyed by the letter the best completion adds - the
+    same shape as a substitution count, and the one this script's completions
+    need. Every row counts: the report is one row per line end.
+    """
+    deletions: Counter = Counter()
+    with open(path, newline='', encoding='utf-8') as fh:
+        for row in csv.DictReader(fh):
+            completion = row.get('completion') or ''
+            if row.get('missing') == '1' and completion:
+                deletions[completion[-1].lower()] += 1
+    return deletions
+
+
+def newest(pattern: str) -> Optional[Path]:
+    found = sorted(PATHS['output'].glob(pattern))
+    return found[-1] if found else None
+
+
+def score_all(items: List[LineEnd], model: ContextModel,
+              channel: Optional[Channel] = None) -> None:
     """
     Attach the best-scoring reading, its margin, and where the evidence is.
 
     Both readings are one token, so unlike the join/split question there is no
     length term to correct for - the sequences being compared are the same
     shape and differ in one slot. That is also why the window is one token and
-    widening it is a no-op: see "Why the answer is not more context" above.
+    widening it is a no-op here: see "More context" above.
+
+    With a `channel`, the reading proposed is the one context and channel
+    together prefer - which is what lets a completion and a substitution
+    compete at all, a cut-off letter and a misread one being different damage
+    at different rates - and `score` is how far that reading beats the
+    transcription on both counts. Without one, `score` is the margin and
+    `best` is what it always was.
 
     The two evidence flags are not part of the score. They record whether the
     bigram table has anything to say about this token beside that neighbour
@@ -330,9 +600,14 @@ def score_all(items: List[LineEnd], model: ContextModel) -> None:
                    [item.following] if item.following else [])
         def total(word: str) -> float:
             return model.score(context[0] + [word] + context[1])
+        def damage(word: str) -> float:
+            return channel.log_ratio(item.observed, word) if channel else 0.0
         observed = total(item.observed)
-        item.best = max(item.candidates, key=total)
+        readings = [c for c in item.candidates if c != item.observed]
+        item.best = max(readings, key=lambda w: total(w) + damage(w))
         item.margin = total(item.best) - observed
+        item.channel = damage(item.best)
+        item.score = item.margin + item.channel
         item.left_evidence = item.previous is not None and bool(
             model.bigrams[(item.previous, item.observed)]
             + model.bigrams[(item.previous, item.best)])
@@ -348,17 +623,24 @@ def score_all(items: List[LineEnd], model: ContextModel) -> None:
 # In the order `gate_reason` tests them, which is deliberate: each implies the
 # next is untestable rather than passed, so a proposal is reported under the
 # first thing wrong with it and the counts add up to the population.
-GATE_REASONS = ('paragraph-final', 'no-right-bigram', 'capitalised-pair')
+GATE_REASONS = ('paragraph-final', 'trailing-punctuation', 'no-right-bigram',
+                'no-left-bigram', 'capitalised-pair')
 
 
 def gate_reason(item: LineEnd) -> Optional[str]:
     """
     Why this proposal is not fit to hand to a person or a model, or None.
 
-    Three populations the 2026-09-04 hand check found the margin cannot
-    separate - see the module docstring for the counts. None of them is a
-    threshold: they are questions this stage is not equipped to answer, and a
-    higher margin makes a wrong answer to them more confident, not less.
+    Populations the hand checks found the margin cannot separate - see the
+    module docstring for the counts. None of them is a threshold: they are
+    questions this stage is not equipped to answer, and a higher margin makes a
+    wrong answer to them more confident, not less.
+
+    `trailing-punctuation` and `no-left-bigram` were found in the 2026-08-30
+    sample and confirmed on the 2026-09-04 one, which they were not drawn from.
+    A token followed by its own full stop or comma did not end at the margin:
+    the punctuation did, so its final letter is not where the damage happens -
+    "kgl. ung." is an abbreviation, not a misread "und".
 
     `paragraph-final` is the one that may lift on its own. The continuation is
     in the next column or on the next page, and once `merge_factoids.py` has
@@ -367,8 +649,12 @@ def gate_reason(item: LineEnd) -> Optional[str]:
     """
     if not item.has_next:
         return 'paragraph-final'
+    if not item.raw_token[-1].isalpha():
+        return 'trailing-punctuation'
     if not item.right_evidence:
         return 'no-right-bigram'
+    if not item.left_evidence:
+        return 'no-left-bigram'
     if item.observed[:1].isupper() and item.best[:1].isupper():
         return 'capitalised-pair'
     return None
@@ -376,9 +662,17 @@ def gate_reason(item: LineEnd) -> Optional[str]:
 
 def proposals(items: List[LineEnd], gate: float,
               ungated: bool = False) -> List[LineEnd]:
-    """Every scored item this stage is willing to put in front of somebody."""
+    """
+    Every scored item this stage is willing to put in front of somebody,
+    most convincing first.
+
+    `gate` is on the margin, not the score: it defines the population the
+    hand-check samples were drawn from, and moving it would move that. The
+    score decides the order within it.
+    """
     changed = [i for i in items if i.best != i.observed and i.margin >= gate]
-    return changed if ungated else [i for i in changed if gate_reason(i) is None]
+    kept = changed if ungated else [i for i in changed if gate_reason(i) is None]
+    return sorted(kept, key=lambda i: -i.score)
 
 
 # ---------------------------------------------------------------------------
@@ -431,6 +725,14 @@ def report_scores(items: List[LineEnd]) -> None:
     for (a, b), n in subs.most_common(10):
         print(f"    {a} -> {b}   {n:,}")
 
+    completions = Counter((i.observed, i.best) for i in changed
+                          if i.margin >= 8 and i.kind == 'completion')
+    if completions:
+        print(f"\n  completions proposed at margin >= 8: "
+              f"{sum(completions.values()):,} (unvalidated - see the docstring)")
+        for (observed, best), n in completions.most_common(8):
+            print(f"    {observed} -> {best}   {n:,}")
+
     report_gates(items)
 
 
@@ -443,26 +745,22 @@ def report_gates(items: List[LineEnd]) -> None:
     the verdict CSV around, and reprinting them beside live counts is what
     makes the counts mean anything.
     """
-    priced = {'paragraph-final': '102 checked, 0 right',
-              'no-right-bigram': '127 checked, 1 right (0.8%)',
-              'capitalised-pair': '30 checked, 4 right (13%)'}
+    priced = {'paragraph-final': '08-30 sample: 102 checked, 0 right',
+              'trailing-punctuation': '09-04 sample: 19 checked, 0 right',
+              'no-right-bigram': '08-30 sample: 127 checked, 1 right (0.8%)',
+              'no-left-bigram': '09-04 sample: 46 checked, 3 right (6.5%)',
+              'capitalised-pair': '08-30 sample: 30 checked, 4 right (13%)'}
     print(f"\n  held back by the gates (of the {len(proposals(items, 6, True)):,} "
           f"proposals at margin >= 6):")
     held = Counter(gate_reason(i) for i in proposals(items, 6, True))
     for reason in GATE_REASONS:
-        print(f"    {reason:18s} {held[reason]:6,}   ({priced[reason]})")
+        print(f"    {reason:20s} {held[reason]:6,}   ({priced[reason]})")
     kept = proposals(items, 6)
-    print(f"    {'kept':18s} {len(kept):6,}   "
-          f"(111 checked, 40 right (36.0%), against 17.0% ungated)")
-
-    # Not a gate, and reported so the choice stays visible: adding it takes the
-    # checked sample from 111 rows at 36.0% to 86 at 44.2%, for two of the 40
-    # confirmed corrections. Whether that trade is worth making is a decision
-    # about the queue's size, which this script does not get to make.
-    weak = sum(1 for i in kept if not i.left_evidence)
-    print(f"\n  of those kept, {weak:,} have no attested bigram on the *left* "
-          f"either\n    (36 checked, 3 right (8.3%) - a fourth gate, not "
-          f"applied)")
+    kinds = Counter(i.kind for i in kept)
+    print(f"    {'kept':20s} {len(kept):6,}   (09-04 sample: 229 checked, "
+          f"85 right (37.1%))")
+    print(f"      {kinds['substitution']:,} substitutions, "
+          f"{kinds['completion']:,} completions (no completion checked yet)")
 
 
 # ---------------------------------------------------------------------------
@@ -487,7 +785,12 @@ def gold_from_interior(items: List[LineEnd], interior: Counter,
     line-initial token. Both make the figure optimistic; only a hand-checked
     sample can price them.
     """
-    wanted = {item.observed for item in items}
+    # The substitution-only population: a token that is ambiguous only through
+    # a completion has a one-candidate set here, which would count as a free
+    # correct answer and move the recorded figures for no reason.
+    wanted = {item.observed for item in items
+              if any(len(c) == len(item.observed) and c != item.observed
+                     for c in item.candidates)}
     files = sorted(xml_folder.glob('*.xml'))
     if max_files:
         files = files[:max_files]
@@ -614,20 +917,32 @@ def report_channel(channel: Dict[Tuple[str, str], int]) -> None:
               f"{n / max(back, 1):8.1f}")
     print("\n  A flat margin treats all of these alike and should not: the "
           "evidence\n  needed to overturn the transcription is not the same "
-          "for `r -> n` as\n  for `n -> r`. Wiring this into the gate is "
-          "phase 3 of the plan, and it\n  must be scored against the "
-          "hand-checked sample before it is trusted.")
+          "for `r -> n` as\n  for `n -> r`. `Channel` puts these counts into "
+          "the score; see \"The channel\n  term\" in the docstring for what "
+          "that was worth on the hand-checked sample.")
 
 
 # ---------------------------------------------------------------------------
 # exports
 # ---------------------------------------------------------------------------
 
+# Words of the next line a reviewer is shown. The 2026-09-04 check found the
+# word that settles an inflection is often several away from the break.
+NEXT_WORDS = 6
+
+
 def context_string(item: LineEnd) -> str:
-    """The line with the judged token marked, plus the next line's first word."""
+    """
+    The line with the judged token marked, then the start of the next line.
+
+    The token as transcribed, punctuation included. Until 2026-09-17 this
+    showed the stripped one, and "kgl. [ung]" read as a missing full stop to
+    the reviewer when the XML had "ung." all along - 19 rows of that sample.
+    """
     body = item.line.rsplit(None, 1)[0] if len(item.line.split()) > 1 else ''
-    tail = f" {item.following}" if item.following else "  [paragraph ends]"
-    return f"{body} [{item.observed}]{tail}"
+    tail = (' / ' + ' '.join(item.next_line.split()[:NEXT_WORDS])
+            if item.next_line else '  [paragraph ends]')
+    return f"{body} [{item.raw_token}]{tail}"
 
 
 def export_sample(items: List[LineEnd], path: Path, size: int,
@@ -677,8 +992,8 @@ def export_sample(items: List[LineEnd], path: Path, size: int,
         # alone will not settle it, and a 90-character URL in the middle of the
         # row pushes everything worth reading off the screen.
         writer.writerow(['verdict', 'margin_band', 'token_band', 'has_next',
-                         'observed', 'proposed', 'margin', 'context',
-                         'file', 'page', 'line_facs', 'subtype',
+                         'kind', 'observed', 'proposed', 'margin', 'score',
+                         'context', 'file', 'page', 'line_facs', 'subtype',
                          'transkribus_link'])
         for (band, token_band, has_next), item in picked:
             link = ''
@@ -688,7 +1003,8 @@ def export_sample(items: List[LineEnd], path: Path, size: int,
                 except Exception:
                     missing_links += 1
             writer.writerow(['', f'>={band}', token_band, int(has_next),
-                             item.observed, item.best, f'{item.margin:.1f}',
+                             item.kind, item.observed, item.best,
+                             f'{item.margin:.1f}', f'{item.score:.1f}',
                              context_string(item), item.file, item.page,
                              item.line_facs, item.subtype, link])
     print(f"\nHand-check sample saved to: {path}")
@@ -703,6 +1019,60 @@ def export_sample(items: List[LineEnd], path: Path, size: int,
     print("  Fill `verdict` with y (the proposal is right) or n (it is not).")
     print("  That column is the only thing standing between this plan and a "
           "guess.")
+
+
+def fit_channel(chars: Optional[Path], truncations: Optional[Path],
+                raw: List[LineEnd]) -> Tuple[Optional[Channel], Dict[str, str]]:
+    """
+    Fit the channel from the two detectors' reports and this corpus.
+
+    A missing half is not fatal. Without substitution counts there is nothing
+    to weigh and the run falls back to the margin; without deletion counts
+    every completion is charged the smoothing floor, which is a rate so low
+    that almost none is proposed - the conservative failure.
+    """
+    if chars is None or not chars.exists():
+        print("  No validate_line_end_chars.py CSV - ranking by the margin "
+              "alone")
+        return None, {}
+    deletions: Counter = Counter()
+    if truncations is not None and truncations.exists():
+        deletions = load_deletions(truncations)
+    else:
+        print("  No validate_line_end_truncations.py report - completions "
+              "will be charged the smoothing floor")
+    finals = Counter(item.observed[-1].lower() for item in raw)
+    substitutions = load_channel(chars)
+    sources = {'substitution': str(chars),
+               'deletion': str(truncations) if truncations else '',
+               'line_ends': f"{sum(finals.values()):,} judgeable line ends, "
+                            f"corpus as of {datetime.date.today().isoformat()}"}
+    print(f"  channel fitted: {sum(substitutions.values()):,} substitutions "
+          f"from {chars.name}, {sum(deletions.values()):,} one-letter "
+          f"deletions from {truncations.name if truncations else '-'}")
+    return Channel(substitutions, deletions, finals), sources
+
+
+def build_channel(args, raw: List[LineEnd]) -> Optional[Channel]:
+    """
+    The channel this run scores with: the frozen one, unless told otherwise.
+
+    `--channel` or `--truncations` fits one from those reports for this run
+    only - the way to try a refit before writing it. Without either, the file
+    `--calibrate --write` produced; without that, the margin alone.
+    """
+    if args.channel or args.truncations:
+        channel, _ = fit_channel(
+            args.channel or newest('*_line_end_chars.csv'),
+            args.truncations or newest('*_line_end_truncations.csv'), raw)
+        return channel
+    if CHANNEL_FILE.exists():
+        channel, account = read_channel(CHANNEL_FILE)
+        print(f"  channel: {account}")
+        return channel
+    print(f"  No {CHANNEL_FILE.name} - ranking by the margin alone "
+          f"(--calibrate --write fits one)")
+    return None
 
 
 def main() -> int:
@@ -739,6 +1109,22 @@ def main() -> int:
                         help='Draw the sample without `gate_reason`, the way '
                              'the 2026-08-30 one was drawn, to re-measure the '
                              'gates instead of trusting them')
+    parser.add_argument('--write', action='store_true',
+                        help=f'With --calibrate: fit the channel and write it '
+                             f'to {CHANNEL_FILE}, which every later run reads')
+    parser.add_argument('--channel', type=Path,
+                        help='validate_line_end_chars.py verdict CSV to fit '
+                             'the substitution rates from, instead of reading '
+                             'the frozen channel (with --write: what to fit '
+                             'it from; default the newest in output/)')
+    parser.add_argument('--truncations', type=Path,
+                        help='validate_line_end_truncations.py report to fit '
+                             'the deletion rates from, likewise')
+    parser.add_argument('--no-channel', action='store_true',
+                        help='Rank by the context margin alone, as before '
+                             '2026-09-17')
+    parser.add_argument('--no-completions', action='store_true',
+                        help='Offer substitutions only, as before 2026-09-17')
     parser.add_argument('--quiet', action='store_true')
     args = parser.parse_args()
 
@@ -758,8 +1144,13 @@ def main() -> int:
             path = found[-1]
         print(f"Channel read from: {path}")
         report_channel(load_channel(path))
-        if not (args.score or args.evaluate or args.export_sample):
+        if args.write and not args.channel:
+            args.channel = path
+        if not (args.write or args.score or args.evaluate
+                or args.export_sample):
             return 0
+    elif args.write:
+        parser.error('--write goes with --calibrate')
 
     skip = frozenset(p.strip() for p in args.skip_subtypes.split(',')
                      if p.strip())
@@ -768,14 +1159,23 @@ def main() -> int:
     if not args.quiet:
         print(f"  {len(interior):,} interior word types / "
               f"{sum(interior.values()):,} tokens")
-    items = ambiguous(raw, interior, args.min_length, args.min_candidate)
+    items = ambiguous(raw, interior, args.min_length, args.min_candidate,
+                      completions=not args.no_completions)
     print(f"\n{len(raw):,} judgeable line ends, {len(items):,} ambiguous "
           f"(observed spelling is itself a word and has an attested variant)")
 
     model = ContextModel(interior, bigrams)
+    if args.write:
+        fitted, sources = fit_channel(
+            args.channel,
+            args.truncations or newest('*_line_end_truncations.csv'), raw)
+        if fitted is None:
+            raise SystemExit("Nothing to write: no substitution counts.")
+        save_channel(fitted, CHANNEL_FILE, sources)
+    channel = None if args.no_channel else build_channel(args, raw)
 
     if args.score:
-        score_all(items, model)
+        score_all(items, model, channel)
         report_scores(items)
 
     if args.evaluate:
@@ -785,7 +1185,7 @@ def main() -> int:
 
     if args.export_sample:
         if not args.score:
-            score_all(items, model)
+            score_all(items, model, channel)
         out = Path(args.export_sample)
         prefix = datetime.date.today().strftime('%Y%m%d')
         export_sample(items, out if out.parent != Path('.')

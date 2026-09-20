@@ -1,5 +1,7 @@
 # Plan: Corpus-as-Dictionary OCR Word Correction
 
+> **Status 2026-09-17: detector A implemented** as `lineends/validate_line_end_truncations.py` (in `lineends`, beside the other line-end scripts, rather than as half of a combined `validate_xml_ocr_words.py`). Full corpus: 697 line ends / 561 tokens against the ~715 estimated below; zero pair-level overlap with the hyphen validator's `FALSE_NEGATIVE` rows. Output is per line end rather than per type, `type_count` keeping the per-type view. `gap_px` was measured before use and runs the other way from a clipping region: hits end further from the region border (median 25 px against 17 px over 646,799 line ends), so it is reported and not used. **Check 3, 2026-09-18:** a 60-row sample of those 697 came back 38% truncated, against the 80% bar. Two rules fix it: only one letter missing (2–3 letters: 1 of 20 truncated) and a completion attested beside a neighbour (3% without one). Together 84% (21 of 25), keeping every right answer; the detector now reports 307 line ends / 239 tokens, offering completions of up to three letters but qualifying a token only on a one-letter one. Detector B is not built.
+
 ## Background
 
 `0_validate/validate_xml_hyphens.py` settles line-break hyphens without any external word list, and

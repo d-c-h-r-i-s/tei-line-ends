@@ -1,12 +1,19 @@
 # Plan: Per-Occurrence Line-End Character Correction
 
-> **Status: phases 2-3 implemented 2026-08-30** as
-> `lineends/resolve_line_end_context.py`; the phase-1 hand-check sample is
-> generated and waiting on a person. Phases 4-6 (the store, `--export-review`,
-> `--resolve`) are not built, deliberately: they should not be until the sample
-> says what the gate is worth. Measured figures from the shipped code are in
-> "What the implementation measured" at the end and supersede the estimates
-> below where they differ.
+> **Status 2026-09-18: phases 1-3 done** in
+> `lineends/resolve_line_end_context.py`. Phase 1 is two hand-checked
+> samples (2026-08-30, 271 rows; 2026-09-04, 300 rows), which set five gates on
+> what may be proposed at all. Phase 3's channel term passed its test - 0.644
+> -> 0.791 AUC over the flat margin on the second sample - and orders the
+> queue; one-letter completions were added as candidates at the same time,
+> unvalidated, with deletion rates from `validate_line_end_truncations.py`.
+> The script's docstring has the figures. Phases 4-6 (the store,
+> `--export-review`, `--resolve`, consumption) are not built, and should be
+> built after the XML is re-exported from Transkribus: about 110 of the errors
+> the two hand checks confirmed were corrected there, and a queue built before
+> the re-export would send them to the model again. Measured figures from the
+> shipped code are in "What the implementation measured" at the end and
+> supersede the estimates below where they differ.
 >
 > Originally proposed 2026-08-29, revised the same day after a critical pass. Every number below was measured on the current corpus
 > (787 files, 750,692 judged line ends, `ad`/`ad-frame` excluded), reusing the
@@ -395,6 +402,12 @@ channel term and the store.
    the phase-1 sample. Keep it only if it beats the flat margin on that sample;
    an untested refinement is a liability, not an improvement.
 
+   **Done 2026-09-17.** It beats it: 0.644 → 0.791 AUC on the 2026-09-04
+   sample (bootstrap gain +0.145, 95% [+0.072, +0.226]), and it now orders
+   the queue. The same change added one-letter completions as candidates,
+   which no labelled row has judged yet; their deletion rates were refitted
+   on 2026-09-18 from the truncation detector's checked output.
+
 4. **The store and `--export-review`.** Gate at whatever margin phase 1 shows
    to be worth a person's or a model's time — the table in Finding 3 is the
    menu, not the answer.
@@ -403,6 +416,13 @@ channel term and the store.
    which already forbids modernising historical orthography and already warns
    about proper names and truncations. Both warnings matter more here than
    there.
+
+   The prompt gets **several words either side of the line end, across line
+   boundaries** - the hand check (2026-09-17) found the deciding word three to
+   six tokens away and often on the previous line ("stiegen im »Hotel Panhans«
+   ab"). This is the context the model is *shown*, not the scorer's window:
+   the bigram scorer cannot use more than one neighbour (see the script's
+   docstring), the LLM can.
 
 6. **Consumption.** `correct_xml_ocr.py` reads the occurrence store the way
    `correct_xml_hyphens.py` now reads `hyphen_occurrences.csv`. Note this lands

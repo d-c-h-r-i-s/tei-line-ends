@@ -397,7 +397,7 @@ def main() -> int:
         # look at are counted next to it.
         print(f"\n  {unjudged:,} break marks on a paragraph's last line were "
               f"left alone — their\n  continuation is in the next column or "
-              f"page, unreachable until\n  `merge_xml_factoids.py` writes the "
+              f"page, unreachable until\n  the paragraph-merge step (downstream, not shipped) writes the "
               f"`@next` chain.")
 
     if stale:

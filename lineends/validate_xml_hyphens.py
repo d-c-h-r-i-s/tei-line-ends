@@ -235,7 +235,7 @@ DASHED_RE = re.compile(r"([A-Za-zÄÖÜäöüßÀ-ÿ]+)[-=]([A-Za-zÄÖÜäöü�
 # Shortest token still worth judging - single letters are initials or ad noise
 MIN_TOKEN_LEN = 2
 
-# `[^>]*` after the facs attribute is not cosmetic: `set_xml_readingorder.py`
+# `[^>]*` after the facs attribute is not cosmetic: the reading-order step (downstream, not shipped)
 # writes a reading-order index onto every paragraph (`<p facs='#…' n='1'>`), and
 # a pattern demanding `>` right after the closing quote matched none of them —
 # the whole analysis silently read an empty corpus. Tolerating further
@@ -899,7 +899,7 @@ def analyse(xml_folder: Path, max_files: Optional[int], ratio: float,
 
     # Files that parse but yield no paragraphs are not an empty corpus, they are
     # a reader that has stopped matching. That is exactly how the `n='1'`
-    # attribute `set_xml_readingorder.py` added went unnoticed: the run carried
+    # attribute the reading-order step (downstream, not shipped) added went unnoticed: the run carried
     # on to a division by zero several screens later, far from the cause.
     if not all_paragraphs:
         raise SystemExit(
@@ -926,7 +926,7 @@ def analyse(xml_folder: Path, max_files: Optional[int], ratio: float,
     # not judged, not counted as OK, and — until now — not mentioned, which is
     # the part worth fixing: an omission nobody can see reads exactly like an
     # absence of errors. Closing it needs the `@next` chain
-    # `merge_xml_factoids.py` will write; see
+    # the paragraph-merge step (downstream, not shipped) will write; see
     # docs/hyphen-occurrence-disambiguation.md.
     stats[UNJUDGED] = unjudged
     for ev in pairs.values():
@@ -1214,8 +1214,8 @@ def main():
     if unjudged:
         print(f"\n  {unjudged:,} further break marks sit on a paragraph's last "
               f"line and were\n  not judged at all: the word continues in the "
-              f"next column or on the next\n  page, which nothing in lineends can "
-              f"reach until `merge_xml_factoids.py`\n  writes the `@next` chain "
+              f"next column or on the next\n  page, which nothing here can reach "
+              f"until a paragraph-merge step writes\n  the `@next` chain "
               f"(docs/hyphen-occurrence-disambiguation.md).")
 
     date_prefix = datetime.date.today().strftime('%Y%m%d')

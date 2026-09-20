@@ -664,7 +664,7 @@ the file and guarded in `apply_promotion`.
 
 ## The paragraph-final gap (depends on the XML refactor)
 
-Design only. `merge_xml_factoids.py` does not exist yet — see
+Design only. the paragraph-merge step (downstream, not shipped) does not exist yet — see
 an XML-layer refactor in the originating project — and nothing here is implemented.
 
 ### What is missing
@@ -687,7 +687,7 @@ left over for manual correction.
 
 ### What closes it, and why it is not a second pass
 
-`merge_xml_factoids.py` writes `@part` on every paragraph and `@next`/`@prev`
+the paragraph-merge step (downstream, not shipped) writes `@part` on every paragraph and `@next`/`@prev`
 across fragments. It does not physically join anything — the `<p>` elements stay
 where they are and gain a chain — and that is exactly what this stage needs.
 **The fix is not "run again over the merged paragraphs". It is: when the
@@ -767,7 +767,7 @@ omission was invisible until it was:
 
     3,324 further break marks sit on a paragraph's last line and were
     not judged at all: the word continues in the next column or on the next
-    page, which nothing in lineends can reach until `merge_xml_factoids.py`
+    page, which nothing in lineends can reach until the paragraph-merge step (downstream, not shipped)
     writes the `@next` chain.
 
 `validate_xml_hyphens.py` and `correct_xml_hyphens.py` both print it. It is
@@ -787,7 +787,7 @@ verdict. The verdict totals are byte-identical before and after.
 Not implemented, and not implementable yet:
 
   * **following `@next`** — zero paragraphs in the corpus carry `@next`,
-    `@prev` or `@part`, and `merge_xml_factoids.py` does not exist. There is
+    `@prev` or `@part`, and the paragraph-merge step (downstream, not shipped) does not exist. There is
     nothing to follow.
   * **the marker check** — `merge_xml_factoids`' `<application>` ident has not
     been chosen. Writing the check against a guessed name would be inventing

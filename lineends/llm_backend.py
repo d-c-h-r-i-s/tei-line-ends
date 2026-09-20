@@ -235,7 +235,7 @@ def parse_json_object(reply: str) -> Tuple[Optional[dict], str]:
     line-end resolvers ask for and wrong for anything containing a list of
     objects: it would stop at the first inner closing brace and hand back
     invalid JSON. This one scans for balanced braces instead, ignoring braces
-    inside strings, and is what `resolve_headings_llm.py` uses to read a whole
+    inside strings, and is what the heading resolver (a sibling script, not shipped) uses to read a whole
     span's worth of answers in one reply.
 
     Returns (data, '') or (None, reason), the same contract as its neighbour,

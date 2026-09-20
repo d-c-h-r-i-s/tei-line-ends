@@ -409,15 +409,15 @@ def set_marker(tree: etree._ElementTree, ident: str, version: str, when: str,
 class Step(NamedTuple):
     """One script that rewrites `data/xml/`."""
 
-    name: str                # script stem, e.g. 'set_xml_readingorder'
+    name: str                # script stem, e.g. 'mark_xml_word_breaks'
     ident: Optional[str]     # its `<application>` marker, None if it writes none
-    automated: bool          # run by `main.py --annotate`, or only by hand?
+    automated: bool          # safe to run unattended, or only by hand?
     note: str = ''           # why, when it is not automated
 
 
-# Every script that rewrites `data/xml/`, in the order the pipeline runs them.
+# Every script that rewrites the TEI, in the order the pipeline runs them.
 # This is the one definition of that order: `clear_markers_after` reads it, and
-# so does `main.py --annotate`, so the two cannot drift apart.
+# so does whatever driver runs the chain, so the two cannot drift apart.
 #
 # A step that writes no marker still holds a position here — it needs one to
 # know what comes *after* it. The two correctors write none deliberately: they

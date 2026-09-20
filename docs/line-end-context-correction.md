@@ -564,7 +564,7 @@ plan.
 
 ## The paragraph-final gap (depends on the XML refactor)
 
-Design only. `merge_xml_factoids.py` does not exist yet — see
+Design only. the paragraph-merge step (downstream, not shipped) does not exist yet — see
 an XML-layer refactor in the originating project.
 
 **145,898 line ends** in scope are a paragraph's last line. Unlike the hyphen
@@ -578,7 +578,7 @@ and Finding 7 says that is the more informative half: 0.818 without it against
 So the gap costs accuracy on 145,898 line ends rather than hiding them
 entirely, and it is concentrated precisely where the evidence is thinnest.
 
-`merge_xml_factoids.py` writes `@next`/`@prev` across fragments without moving
+the paragraph-merge step (downstream, not shipped) writes `@next`/`@prev` across fragments without moving
 any `<p>`, so the fix is the same one-place change as for the hyphens: **when
 the following line is not in this `<p>`, follow `@next` to the first line of
 the fragment that continues it.** The scoring, the store and the queue are

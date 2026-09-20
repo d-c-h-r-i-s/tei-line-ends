@@ -119,11 +119,19 @@ uv sync                      # or: pip install lxml requests tqdm
 
 python config.py             # print the resolved paths
 
-# point it at your own TEI
-python lineends/validate_xml_hyphens.py     --xml-folder /path/to/tei
-python lineends/validate_line_end_chars.py  --xml-folder /path/to/tei
-python lineends/resolve_line_end_context.py --xml-folder /path/to/tei --score
+# run it on the five sample issues that ship with the repo
+python lineends/validate_xml_hyphens.py          --xml-folder examples/xml
+python lineends/validate_line_end_chars.py       --xml-folder examples/xml
+python lineends/validate_line_end_truncations.py --xml-folder examples/xml
+python lineends/resolve_line_end_context.py      --xml-folder examples/xml --score
+
+# then at your own TEI
+python lineends/validate_xml_hyphens.py --xml-folder /path/to/tei
 ```
+
+The sample is raw Transkribus output, so the correctors have real work to do on
+it: 138 `<l>` elements and 18 line breaks across the five issues. Full
+walkthrough in [examples/README.md](examples/README.md).
 
 Every script takes `--xml-folder` and `--max-files`; nothing writes to your TEI
 until you run `correct_xml_ocr.py` or `correct_xml_hyphens.py`, and both of
@@ -186,8 +194,11 @@ failure populations no margin can separate and a window-size experiment that
 changed **0 margins and 0 proposals**, is in
 [docs/line-end-context-correction.md](docs/line-end-context-correction.md).
 
-No sample corpus ships with the repo: the transcriptions are not ours to
-republish. Point `--xml-folder` at your own export.
+Five issues ship in [examples/xml/](examples/xml/), **raw from Transkribus** —
+no correction of any kind applied — so the whole chain can be run and watched
+changing the text. Alongside them are the decision stores for all 787 issues and
+the two hand-labelled samples every precision figure in the docs rests on. See
+[examples/README.md](examples/README.md). Code is MIT; that data is CC BY 4.0.
 
 ## Documentation
 
@@ -202,6 +213,9 @@ republish. Point `--xml-folder` at your own export.
 The scripts' docstrings are the reference documentation and are written to be
 read. Each one says what it refuses to do and why.
 
-## Citation
+## Licence and citation
 
-See [CITATION.cff](CITATION.cff). MIT licensed.
+Code is **MIT**. The data in [examples/](examples/) — transcriptions, decision
+stores and hand-labelled samples — is **CC BY 4.0**; the Transkribus output is
+the author's own under contract with the Österreichische Nationalbibliothek.
+See [CITATION.cff](CITATION.cff).

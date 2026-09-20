@@ -7,6 +7,7 @@ authors:
     given-names: Christian
 repository-code: "https://github.com/d-c-h-r-i-s/tei-line-ends"
 license: MIT
+license-url: "https://github.com/d-c-h-r-i-s/tei-line-ends/blob/main/LICENSE"
 version: 0.1.0
 date-released: 2026-09-12
 keywords:

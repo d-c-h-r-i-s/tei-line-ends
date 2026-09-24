@@ -4,6 +4,10 @@
 only because a line ended there, and a method for correcting them that needs no
 dictionary and never lets a machine write to the transcription unsupervised.
 
+Looking for layout and region checks rather than line-break correction? Those
+are in
+**[transkribus-validation](https://github.com/d-c-h-r-i-s/transkribus-validation)**.
+
 Extracted from the [Wiener Salonblatt](https://anno.onb.ac.at/) corpus project:
 787 issues of a Viennese society newspaper, 1914–1938, set in Antiqua and
 transcribed in Transkribus. (The earlier issues, 1913 and before, are Fraktur
@@ -232,6 +236,25 @@ the two hand-labelled samples every precision figure in the docs rests on. See
 
 The scripts' docstrings are the reference documentation and are written to be
 read. Each one says what it refuses to do and why.
+
+## Related
+
+**[transkribus-validation](https://github.com/d-c-h-r-i-s/transkribus-validation)**
+— read-only validators for the same kind of TEI: text lines escaping their
+parent region, region bounding boxes stacked on each other, a first or last
+line assigned to the neighbouring region, one physical line split in two,
+regions with a missing or unknown `@subtype`, and schema conformance.
+
+The two repositories split on what a finding is *for*. The validators there
+only ever write a report: they tell you to go and fix something in Transkribus
+and re-export. The line-end validators here — `validate_xml_hyphens.py`,
+`validate_line_end_chars.py`, `validate_line_end_truncations.py` — look like
+the same kind of tool but are not, because their findings feed a decision store
+that a corrector then applies to the text. They are the detector stage of a
+correction chain, which is why they live with the chain.
+
+Both are extracted from the same pipeline and share the same five sample
+issues, so they can be run against one corpus side by side.
 
 ## Licence and citation
 
